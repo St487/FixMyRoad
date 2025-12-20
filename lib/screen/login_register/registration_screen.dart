@@ -1,7 +1,10 @@
 import 'package:fix_my_road/animation/animated_button.dart';
 import 'package:fix_my_road/animation/transition.dart';
-import 'package:fix_my_road/screen/complete_profile.dart';
+import 'package:fix_my_road/provider/language_provider.dart';
+import 'package:fix_my_road/screen/login_register/complete_profile.dart';
+import 'package:fix_my_road/utils/app_text.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
@@ -13,6 +16,9 @@ class RegistrationScreen extends StatefulWidget {
 class _RegistrationScreenState extends State<RegistrationScreen> {
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    final lang = context.watch<LanguageProvider>();
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -52,8 +58,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               child: Align(
                 alignment: Alignment.bottomCenter,
                 child: Container(
+                  height: screenHeight * 0.85,
                   width: double.infinity,
-                  padding: const EdgeInsets.fromLTRB(30, 40, 30, 40),
+                  padding: const EdgeInsets.fromLTRB(30, 40, 30, 0),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: const BorderRadius.only(
@@ -73,7 +80,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
-                          'Create Your Account',
+                          AppText.createAccount(lang.isEnglish),
                           style: TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.bold,
@@ -83,15 +90,15 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         Container(
                           width: double.infinity,
                           padding: EdgeInsets.fromLTRB(10, 0, 0, 5),
-                          child: const Text(
-                            'Email',
+                          child: Text(
+                            AppText.emailAddress(lang.isEnglish),
                             style: TextStyle(fontSize: 16),
                             textAlign: TextAlign.left,
                           ),
                         ),
                         TextField(
                           decoration: InputDecoration(
-                            hintText: "Your Email",
+                            hintText: AppText.inputEmail(lang.isEnglish),
                             hintStyle: TextStyle(color: Colors.grey.shade500),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(20),
@@ -103,15 +110,15 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         Container(
                           width: double.infinity,
                           padding: EdgeInsets.fromLTRB(10, 0, 0, 5),
-                          child: const Text(
-                            'Verification Code',
+                          child: Text(
+                            AppText.verificationCode(lang.isEnglish),
                             style: TextStyle(fontSize: 16),
                             textAlign: TextAlign.left,
                           ),
                         ),
                         TextField(
                           decoration: InputDecoration(
-                            hintText: "Input Verification Code",
+                            hintText: AppText.inputVerificationCode(lang.isEnglish),
                             hintStyle: TextStyle(color: Colors.grey.shade500),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(20),
@@ -123,8 +130,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                 onPressed: () {
                                   // Send code action
                                 },
-                                child: const Text(
-                                  'Send Code',
+                                child: Text(
+                                  AppText.verificationButton(lang.isEnglish),
                                   style: TextStyle(
                                     color: Colors.purple,
                                     fontWeight: FontWeight.bold,
@@ -142,15 +149,15 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         Container(
                           width: double.infinity,
                           padding: EdgeInsets.fromLTRB(10, 0, 0, 5),
-                          child: const Text(
-                            'Phone Number',
+                          child: Text(
+                            AppText.phoneNumber(lang.isEnglish),
                             style: TextStyle(fontSize: 16),
                             textAlign: TextAlign.left,
                           ),
                         ),
                         TextField(
                           decoration: InputDecoration(
-                            hintText: "Your Phone Number",
+                            hintText: AppText.inputPhone(lang.isEnglish),
                             hintStyle: TextStyle(color: Colors.grey.shade500),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(20),
@@ -162,16 +169,16 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         Container(
                           width: double.infinity,
                           padding: EdgeInsets.fromLTRB(10, 0, 0, 5),
-                          child: const Text(
-                            'Password',
+                          child: Text(
+                            AppText.password(lang.isEnglish),
                             style: TextStyle(fontSize: 16),
                             textAlign: TextAlign.left,
                           ),
                         ),
                         TextField(
                           decoration: InputDecoration(
-                            hintText: "Your Password",
-                            helperText: "Min 6 chars · 1 uppercase · 1 lowercase · 1 number",
+                            hintText: AppText.inputPassword(lang.isEnglish),
+                            helperText: AppText.passwordHint(lang.isEnglish),
                             helperMaxLines: 2,
                             helperStyle: TextStyle(color: Colors.grey.shade600, fontSize: 12),
                             hintStyle: TextStyle(color: Colors.grey.shade500),
@@ -185,15 +192,15 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         Container(
                           width: double.infinity,
                           padding: EdgeInsets.fromLTRB(10, 0, 0, 5),
-                          child: const Text(
-                            'Confirm Password',
+                          child: Text(
+                            AppText.confirmPassword(lang.isEnglish),
                             style: TextStyle(fontSize: 16),
                             textAlign: TextAlign.left,
                           ),
                         ),
                         TextField(
                           decoration: InputDecoration(
-                            hintText: "Confirm Your Password",
+                            hintText: AppText.inputConfirm(lang.isEnglish),
                             hintStyle: TextStyle(color: Colors.grey.shade500),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(20),
@@ -201,14 +208,37 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                           ),
                         ),
-                        SizedBox(height: 30),
+                        SizedBox(height: 20),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              AppText.haveAccount(lang.isEnglish),
+                              style: TextStyle(fontSize: 16),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              child: Text(
+                                AppText.login(lang.isEnglish),
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.purple,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 10),
                         AnimatedButton(
                           width: 250,
                           onPressed: () {
                             TransitionButton.navigateWithSlide(context, const CompleteProfile());
                           },
-                          child: const Text(
-                            "Sign Up",
+                          child: Text(
+                            AppText.register(lang.isEnglish),
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,

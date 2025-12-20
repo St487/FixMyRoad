@@ -1,4 +1,4 @@
-import 'package:fix_my_road/screen/login_screen.dart';
+import 'package:fix_my_road/screen/login_register/login_screen.dart';
 import 'package:flutter/material.dart';
 
 class Splashscreen extends StatefulWidget {

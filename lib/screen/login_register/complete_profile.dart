@@ -1,6 +1,9 @@
 import 'package:fix_my_road/animation/animated_button.dart';
-import 'package:fix_my_road/screen/login_screen.dart';
+import 'package:fix_my_road/provider/language_provider.dart';
+import 'package:fix_my_road/screen/login_register/login_screen.dart';
+import 'package:fix_my_road/utils/app_text.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class CompleteProfile extends StatefulWidget {
   const CompleteProfile({super.key});
@@ -17,6 +20,8 @@ class _CompleteProfileState extends State<CompleteProfile> {
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final lang = context.watch<LanguageProvider>();
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -51,21 +56,14 @@ class _CompleteProfileState extends State<CompleteProfile> {
                 ),
               ),
             ),
-            Text(
-              'Complete Your Profile',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
             SizedBox(height: 20),
             Expanded(
               child: Align(
                 alignment: Alignment.bottomCenter,
                 child: Container(
+                  height: screenHeight * 0.85,
                   width: double.infinity,
-                    padding: const EdgeInsets.fromLTRB(30, 40, 30, 40),
+                    padding: const EdgeInsets.fromLTRB(30, 40, 30, 0),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: const BorderRadius.only(
@@ -84,18 +82,28 @@ class _CompleteProfileState extends State<CompleteProfile> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
+                          Text(
+                            AppText.completeProfile(lang.isEnglish),
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 20),
+
+                          // First Name Field
                           Container(
                             width: double.infinity,
                             padding: EdgeInsets.fromLTRB(10, 0, 0, 5),
-                            child: const Text(
-                              'First Name',
+                            child: Text(
+                              AppText.firstName(lang.isEnglish),
                               style: TextStyle(fontSize: 16),
                               textAlign: TextAlign.left,
                             ),
                           ),
                           TextField(
                             decoration: InputDecoration(
-                              hintText: "Your First Name",
+                              hintText: AppText.inputFirstName(lang.isEnglish),
                               hintStyle: TextStyle(color: Colors.grey.shade500),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(15),
@@ -104,18 +112,20 @@ class _CompleteProfileState extends State<CompleteProfile> {
                             ),
                           ),
                           SizedBox(height: 20),
+
+                          // Last Name Field
                           Container(
                             width: double.infinity,
                             padding: EdgeInsets.fromLTRB(10, 0, 0, 5),
-                            child: const Text(
-                              'Last Name',
+                            child: Text(
+                              AppText.lastName(lang.isEnglish),
                               style: TextStyle(fontSize: 16),
                               textAlign: TextAlign.left,
                             ),
                           ),
                           TextField(
                             decoration: InputDecoration(
-                              hintText: "Your Last Name",
+                              hintText: AppText.inputLastName(lang.isEnglish),
                               hintStyle: TextStyle(color: Colors.grey.shade500),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(15),
@@ -124,11 +134,13 @@ class _CompleteProfileState extends State<CompleteProfile> {
                             ),
                           ),
                           SizedBox(height: 20),
+
+                          // Address Field
                           Container(
                             width: double.infinity,
                             padding: EdgeInsets.fromLTRB(10, 0, 0, 5),
-                            child: const Text(
-                              'Address',
+                            child: Text(
+                              AppText.address(lang.isEnglish),
                               style: TextStyle(fontSize: 16),
                               textAlign: TextAlign.left,
                             ),
@@ -138,7 +150,7 @@ class _CompleteProfileState extends State<CompleteProfile> {
                             minLines: 3, 
                             maxLines: 6,
                             decoration: InputDecoration(
-                              hintText: "Your Address",
+                              hintText: AppText.inputAddress(lang.isEnglish),
                               hintStyle: TextStyle(color: Colors.grey.shade500),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(15),
@@ -147,18 +159,20 @@ class _CompleteProfileState extends State<CompleteProfile> {
                             ),
                           ),
                           SizedBox(height: 20),
+
+                          // Postal Code Field
                           Container(
                             width: double.infinity,
                             padding: EdgeInsets.fromLTRB(10, 0, 0, 5),
-                            child: const Text(
-                              'Postal Code',
+                            child: Text(
+                              AppText.postalCode(lang.isEnglish),
                               style: TextStyle(fontSize: 16),
                               textAlign: TextAlign.left,
                             ),
                           ),
                           TextField(
                             decoration: InputDecoration(
-                              hintText: "Your Postal Code",
+                              hintText: AppText.inputPostalCode(lang.isEnglish),
                               hintStyle: TextStyle(color: Colors.grey.shade500),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(15),
@@ -167,11 +181,13 @@ class _CompleteProfileState extends State<CompleteProfile> {
                             ),
                           ),
                           SizedBox(height: 20),
+
+                          // State Dropdown
                           Container(
                             width: double.infinity,
                             padding: EdgeInsets.fromLTRB(10, 0, 0, 5),
-                            child: const Text(
-                              'State',
+                            child: Text(
+                              AppText.state(lang.isEnglish),
                               style: TextStyle(fontSize: 16),
                               textAlign: TextAlign.left,
                             ),
@@ -189,7 +205,7 @@ class _CompleteProfileState extends State<CompleteProfile> {
                                 .toList(),
                             onChanged: (v) => setState(() => selectedState = v),
                             decoration: InputDecoration(
-                              hintText: "Select State",
+                              hintText: AppText.inputState(lang.isEnglish),
                               hintStyle: TextStyle(color: Colors.grey.shade500),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(15),
@@ -198,11 +214,13 @@ class _CompleteProfileState extends State<CompleteProfile> {
                             ),
                           ),
                           SizedBox(height: 20),
+
+                          // City Dropdown
                           Container(
                             width: double.infinity,
                             padding: EdgeInsets.fromLTRB(10, 0, 0, 5),
-                            child: const Text(
-                              'City',
+                            child: Text(
+                              AppText.city(lang.isEnglish),
                               style: TextStyle(fontSize: 16),
                               textAlign: TextAlign.left,
                             ),
@@ -220,7 +238,7 @@ class _CompleteProfileState extends State<CompleteProfile> {
                                 .toList(),
                             onChanged: (v) => setState(() => selectedCity = v),
                             decoration: InputDecoration(
-                              hintText: "Select City",
+                              hintText: AppText.inputCity(lang.isEnglish),
                               hintStyle: TextStyle(color: Colors.grey.shade500),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(15),
@@ -229,6 +247,8 @@ class _CompleteProfileState extends State<CompleteProfile> {
                             ),
                           ),
                           SizedBox(height: 30),
+
+                          // Done Button
                           AnimatedButton(
                             width: 250,
                             // onPressed: () {
@@ -249,8 +269,8 @@ class _CompleteProfileState extends State<CompleteProfile> {
                                 (route) => false, // removes all existing routes
                               );
                             },
-                            child: const Text(
-                              "Done",
+                            child: Text(
+                              AppText.doneButton(lang.isEnglish),
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,

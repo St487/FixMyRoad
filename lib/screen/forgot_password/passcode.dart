@@ -1,7 +1,10 @@
 import 'package:fix_my_road/animation/transition.dart';
+import 'package:fix_my_road/provider/language_provider.dart';
+import 'package:fix_my_road/utils/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fix_my_road/screen/forgot_password/reset_password.dart';
+import 'package:provider/provider.dart';
 
 class PasscodeScreen extends StatefulWidget {
   const PasscodeScreen({super.key});
@@ -54,6 +57,10 @@ class _PasscodeScreenState extends State<PasscodeScreen> {
   }
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    double containerWidth = screenWidth > 600 ? 500 : screenWidth * 0.9;
+
+    final lang = context.watch<LanguageProvider>();
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -89,18 +96,19 @@ class _PasscodeScreenState extends State<PasscodeScreen> {
                 child: Center(
                   child: Container(
                     padding: const EdgeInsets.all(10),
+                    width: containerWidth,
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Image.asset('assets/images/passcode.png', height: 150),
                         SizedBox(height: 20),
-                        const Text(
-                          'Enter Passcode',
+                        Text(
+                          AppText.enterPasscode(lang.isEnglish),
                           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 10),
-                        const Text(
-                          'Please enter the passcode sent to your email to reset your password.',
+                        Text(
+                          AppText.enterPasscodeDesc(lang.isEnglish),
                           textAlign: TextAlign.center,
                           style: TextStyle(fontSize: 16),
                         ),
@@ -130,8 +138,8 @@ class _PasscodeScreenState extends State<PasscodeScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Text(
-                              'Didn\'t receive the code?',
+                            Text(
+                              AppText.didntReceiveCode(lang.isEnglish),
                               textAlign: TextAlign.center,
                               style: TextStyle(fontSize: 16),
                             ),
@@ -139,8 +147,8 @@ class _PasscodeScreenState extends State<PasscodeScreen> {
                               onPressed: (){
                                 // Resend code logic here
                               }, 
-                              child: const Text(
-                                'Resend',
+                              child: Text(
+                                AppText.resend(lang.isEnglish),
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,

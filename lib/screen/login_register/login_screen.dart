@@ -1,9 +1,12 @@
 import 'package:fix_my_road/animation/animated_button.dart';
 import 'package:fix_my_road/animation/transition.dart';
-import 'package:fix_my_road/screen/forgot_password.dart';
+import 'package:fix_my_road/provider/language_provider.dart';
+import 'package:fix_my_road/screen/forgot_password/forgot_password.dart';
 import 'package:fix_my_road/screen/home_page.dart';
-import 'package:fix_my_road/screen/registration_screen.dart';
+import 'package:fix_my_road/screen/login_register/registration_screen.dart';
+import 'package:fix_my_road/utils/app_text.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,6 +18,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   bool isChecked = false;
   bool _isPasswordVisible = false;
+  bool isEnglish = true;
 
   @override
   Widget build(BuildContext context) {
@@ -22,6 +26,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
     // Set a max width for large screens
     double containerWidth = screenWidth > 600 ? 500 : screenWidth * 0.9;
+
+    final lang = context.watch<LanguageProvider>();
 
     return Scaffold(
       body: Container(
@@ -62,13 +68,25 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min, // <- makes height fit content
                 children: [
+
+                  // Language Switcher
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: TextButton.icon(
+                      icon: const Icon(Icons.language),
+                      label: Text(lang.isEnglish ? 'BM' : 'EN'),
+                      onPressed: () {
+                        lang.toggleLanguage();
+                      },
+                    ),
+                  ),
                   const SizedBox(height: 20),
-                  const Text(
-                    'Welcome Back!',
+                  Text(
+                    AppText.welcome(lang.isEnglish),
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
-                  const Text(
-                    'Please log in to continue',
+                  Text(
+                    AppText.subtitle(lang.isEnglish),
                     style: TextStyle(fontSize: 16, color: Colors.grey),
                   ),
                   const SizedBox(height: 30),
@@ -76,7 +94,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   // Email and Password fields
                   TextField(
                     decoration: InputDecoration(
-                      labelText: "Email",
+                      labelText: AppText.email(lang.isEnglish),
                       labelStyle: const TextStyle(color: Colors.grey),
                       prefixIcon: const Icon(Icons.email),
                       border: OutlineInputBorder(
@@ -88,7 +106,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   TextField(
                     obscureText: !_isPasswordVisible,
                     decoration: InputDecoration(
-                      labelText: "Password",
+                      labelText: AppText.password(lang.isEnglish),
                       labelStyle: const TextStyle(color: Colors.grey),
                       prefixIcon: const Icon(Icons.lock),
                       suffixIcon: IconButton(
@@ -108,7 +126,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
               
-                  // Remember Me and Forgot Password
+                  // Remember Me
                   Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [ 
@@ -122,7 +140,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               });
                             },
                           ),
-                          const Text("Remember Me"),
+                          Text(AppText.rememberMe(lang.isEnglish)),
                         ],
                       ),
                     ],
@@ -137,8 +155,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         return const HomePage();
                       }));
                     },
-                    child: const Text(
-                      "Log In",
+                    child: Text(
+                      AppText.login(lang.isEnglish),
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -154,15 +172,17 @@ class _LoginScreenState extends State<LoginScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text("Don't have an account? "),
-                      TransitionButton(page: const RegistrationScreen(), text: "Sign Up"),
+                      Text(AppText.noAccount(lang.isEnglish)),
+                      TransitionButton(page: const RegistrationScreen(), text: AppText.signUp(lang.isEnglish)),
                     ],
                   ),
+
+                  // Forgot Password
                   TextButton(
                     onPressed: () {
                       TransitionButton.navigateWithSlide(context, const ForgotPassword());
                     },
-                    child: const Text("Forgot Password?"),
+                    child: Text(AppText.forgotPassword(lang.isEnglish)),
                   ),
                 ],
               ),

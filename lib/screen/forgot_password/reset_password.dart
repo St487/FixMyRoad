@@ -1,5 +1,8 @@
-import 'package:fix_my_road/screen/login_screen.dart';
+import 'package:fix_my_road/provider/language_provider.dart';
+import 'package:fix_my_road/screen/login_register/login_screen.dart';
+import 'package:fix_my_road/utils/app_text.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class ResetPassword extends StatefulWidget {
   const ResetPassword({super.key});
@@ -11,6 +14,10 @@ class ResetPassword extends StatefulWidget {
 class _ResetPasswordState extends State<ResetPassword> {
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    double containerWidth = screenWidth > 600 ? 500 : screenWidth * 0.9;
+
+    final lang = context.watch<LanguageProvider>();
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -45,25 +52,27 @@ class _ResetPasswordState extends State<ResetPassword> {
               Expanded(
                 child: Center(
                   child: Container(
+                    width: containerWidth,
                     padding: const EdgeInsets.all(10),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Image.asset('assets/images/reset.png', height: 150),
                         SizedBox(height: 20),
-                        const Text(
-                          'Reset Password',
+                        Text(
+                          AppText.resetPassword(lang.isEnglish),
+                          textAlign: TextAlign.center,
                           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                         ),
-                        const Text(
-                          'Enter your new password.',
+                        Text(
+                          AppText.enterNewPassword(lang.isEnglish),
                           textAlign: TextAlign.center,
                           style: TextStyle(fontSize: 16),
                         ),
                         const SizedBox(height: 20),
                         TextField(
                           decoration: InputDecoration(
-                            labelText: "New Password",
+                            labelText: AppText.newPassword(lang.isEnglish),
                             labelStyle: const TextStyle(color: Colors.grey),
                             prefixIcon: const Icon(Icons.lock_outline),
                             filled: true,
@@ -76,7 +85,7 @@ class _ResetPasswordState extends State<ResetPassword> {
                         const SizedBox(height: 20),
                         TextField(
                           decoration: InputDecoration(
-                            labelText: "Confirm Password",
+                            labelText: AppText.confirmPassword(lang.isEnglish),
                             labelStyle: const TextStyle(color: Colors.grey),
                             prefixIcon: const Icon(Icons.lock_outline),
                             filled: true,
@@ -102,9 +111,9 @@ class _ResetPasswordState extends State<ResetPassword> {
                                 borderRadius: BorderRadius.circular(30),
                               ),
                             ),
-                            child: const Text(
-                              "Confirm",
-                              style: TextStyle(
+                            child: Text(
+                              AppText.reset(lang.isEnglish),
+                              style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,

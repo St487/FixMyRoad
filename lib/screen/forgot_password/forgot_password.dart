@@ -1,6 +1,9 @@
 import 'package:fix_my_road/animation/transition.dart';
-import 'package:fix_my_road/screen/passcode.dart';
+import 'package:fix_my_road/provider/language_provider.dart';
+import 'package:fix_my_road/screen/forgot_password/passcode.dart';
+import 'package:fix_my_road/utils/app_text.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class ForgotPassword extends StatefulWidget {
   const ForgotPassword({super.key});
@@ -12,6 +15,7 @@ class ForgotPassword extends StatefulWidget {
 class _ForgotPasswordState extends State<ForgotPassword> {
   @override
   Widget build(BuildContext context) {
+    final lang = context.watch<LanguageProvider>();
     final screenWidth = MediaQuery.of(context).size.width;
     double containerWidth = screenWidth > 600 ? 500 : screenWidth * 0.9;
     return Scaffold(
@@ -54,20 +58,20 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Image.asset('assets/images/forgotpassword.png', height: 150),
-                        const Text(
-                          'Forgot Your Password?',
+                        Text(
+                          AppText.forgotYourPassword(lang.isEnglish),
                           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 10),
-                        const Text(
-                          'Enter your email address \nbelow to receive a password reset code.',
+                        Text(
+                          AppText.enterEmailResetCode(lang.isEnglish),
                           textAlign: TextAlign.center,
                           style: TextStyle(fontSize: 16),
                         ),
                         const SizedBox(height: 30),
                         TextField(
                           decoration: InputDecoration(
-                            labelText: "Email Address",
+                            labelText: AppText.emailAddress(lang.isEnglish),
                             labelStyle: const TextStyle(color: Colors.grey),
                             prefixIcon: const Icon(Icons.email_outlined),
                             filled: true,
@@ -80,8 +84,8 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Text(
-                              'Remember password?',
+                            Text(
+                              AppText.rememberPassword(lang.isEnglish),
                               textAlign: TextAlign.center,
                               style: TextStyle(fontSize: 16),
                             ),
@@ -89,8 +93,8 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                               onPressed: (){
                                 Navigator.pop(context);
                               }, 
-                              child: const Text(
-                                'Login',
+                              child: Text(
+                                AppText.loginShort(lang.isEnglish),
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -114,8 +118,8 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                                 borderRadius: BorderRadius.circular(30),
                               ),
                             ),
-                            child: const Text(
-                              "Send Code",
+                            child: Text(
+                              AppText.sendCode(lang.isEnglish),
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
