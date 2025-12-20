@@ -1,19 +1,16 @@
-import 'package:fix_my_road/animation/transition.dart';
-import 'package:fix_my_road/screen/passcode.dart';
+import 'package:fix_my_road/screen/login_screen.dart';
 import 'package:flutter/material.dart';
 
-class ForgotPassword extends StatefulWidget {
-  const ForgotPassword({super.key});
+class ResetPassword extends StatefulWidget {
+  const ResetPassword({super.key});
 
   @override
-  State<ForgotPassword> createState() => _ForgotPasswordState();
+  State<ResetPassword> createState() => _ResetPasswordState();
 }
 
-class _ForgotPasswordState extends State<ForgotPassword> {
+class _ResetPasswordState extends State<ResetPassword> {
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    double containerWidth = screenWidth > 600 ? 500 : screenWidth * 0.9;
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -35,41 +32,40 @@ class _ForgotPasswordState extends State<ForgotPassword> {
           child: Column(
             children: [
               Row(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 20.0, left: 8.0),
-                    child: GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: const Icon(Icons.arrow_back, color: Colors.white, size: 30),
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 20.0, left: 8.0),
+                      child: GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: const Icon(Icons.arrow_back, color: Colors.white, size: 30),
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
               Expanded(
                 child: Center(
                   child: Container(
-                    width: containerWidth,
                     padding: const EdgeInsets.all(10),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Image.asset('assets/images/forgotpassword.png', height: 150),
+                        Image.asset('assets/images/reset.png', height: 150),
+                        SizedBox(height: 20),
                         const Text(
-                          'Forgot Your Password?',
+                          'Reset Password',
                           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                         ),
-                        const SizedBox(height: 10),
                         const Text(
-                          'Enter your email address \nbelow to receive a password reset code.',
+                          'Enter your new password.',
                           textAlign: TextAlign.center,
                           style: TextStyle(fontSize: 16),
                         ),
-                        const SizedBox(height: 30),
+                        const SizedBox(height: 20),
                         TextField(
                           decoration: InputDecoration(
-                            labelText: "Email Address",
+                            labelText: "New Password",
                             labelStyle: const TextStyle(color: Colors.grey),
-                            prefixIcon: const Icon(Icons.email_outlined),
+                            prefixIcon: const Icon(Icons.lock_outline),
                             filled: true,
                             fillColor: Colors.white,
                             border: OutlineInputBorder(
@@ -77,35 +73,27 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                             ),
                           ),
                         ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text(
-                              'Remember password?',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(fontSize: 16),
+                        const SizedBox(height: 20),
+                        TextField(
+                          decoration: InputDecoration(
+                            labelText: "Confirm Password",
+                            labelStyle: const TextStyle(color: Colors.grey),
+                            prefixIcon: const Icon(Icons.lock_outline),
+                            filled: true,
+                            fillColor: Colors.white,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
                             ),
-                            TextButton(
-                              onPressed: (){
-                                Navigator.pop(context);
-                              }, 
-                              child: const Text(
-                                'Login',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color.fromARGB(255, 62, 129, 212),
-                                ),
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
-                        SizedBox(height: 10),
+                        SizedBox(height: 20),
                         Container(
                           padding: const EdgeInsets.only(bottom: 50),
                           child: ElevatedButton(
                             onPressed: (){
-                              TransitionButton.navigateWithSlide(context, const PasscodeScreen());
+                              Navigator.push(context, MaterialPageRoute(builder: (context) {
+                                return const LoginScreen();
+                              }));
                             }, 
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color.fromARGB(255, 62, 129, 212),
@@ -115,7 +103,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                               ),
                             ),
                             child: const Text(
-                              "Send Code",
+                              "Confirm",
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -135,5 +123,4 @@ class _ForgotPasswordState extends State<ForgotPassword> {
       ),
     );
   }
-  
 }

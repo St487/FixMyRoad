@@ -44,7 +44,7 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Center(
           child: Container(
             width: containerWidth,
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(30),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(20),
@@ -58,111 +58,114 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
 
             // Login form
-            child: Column(
-              mainAxisSize: MainAxisSize.min, // <- makes height fit content
-              children: [
-                const Text(
-                  'Welcome Back!',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                ),
-                const Text(
-                  'Please log in to continue',
-                  style: TextStyle(fontSize: 16, color: Colors.grey),
-                ),
-                const SizedBox(height: 30),
-
-                // Email and Password fields
-                TextField(
-                  decoration: InputDecoration(
-                    labelText: "Email",
-                    labelStyle: const TextStyle(color: Colors.grey),
-                    prefixIcon: const Icon(Icons.email),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min, // <- makes height fit content
+                children: [
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Welcome Back!',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
-                ),
-                const SizedBox(height: 20),
-                TextField(
-                  obscureText: !_isPasswordVisible,
-                  decoration: InputDecoration(
-                    labelText: "Password",
-                    labelStyle: const TextStyle(color: Colors.grey),
-                    prefixIcon: const Icon(Icons.lock),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                        color: Colors.grey,
+                  const Text(
+                    'Please log in to continue',
+                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                  ),
+                  const SizedBox(height: 30),
+              
+                  // Email and Password fields
+                  TextField(
+                    decoration: InputDecoration(
+                      labelText: "Email",
+                      labelStyle: const TextStyle(color: Colors.grey),
+                      prefixIcon: const Icon(Icons.email),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      onPressed: () {
-                        setState(() {
-                          _isPasswordVisible = !_isPasswordVisible;
-                        });
-                      },
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                ),
-
-                // Remember Me and Forgot Password
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [ 
-                    Row(
-                      children: [
-                        Checkbox(
-                          value: isChecked,
-                          onChanged: (value) {
-                            setState(() {
-                              isChecked = value!;
-                            });
-                          },
+                  const SizedBox(height: 20),
+                  TextField(
+                    obscureText: !_isPasswordVisible,
+                    decoration: InputDecoration(
+                      labelText: "Password",
+                      labelStyle: const TextStyle(color: Colors.grey),
+                      prefixIcon: const Icon(Icons.lock),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                          color: Colors.grey,
                         ),
-                        const Text("Remember Me"),
-                      ],
-                    ),
-                  ],
-                ),
-                
-                // Login Button
-                const SizedBox(height: 15),
-                AnimatedButton(
-                  width: 250,
-                  onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) {
-                      return const HomePage();
-                    }));
-                  },
-                  child: const Text(
-                    "Log In",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                        onPressed: () {
+                          setState(() {
+                            _isPasswordVisible = !_isPasswordVisible;
+                          });
+                        },
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                   ),
-                ),
-
-                const SizedBox(height: 15),
-                const Divider(height: 20, thickness: 1.5),
-
-                // Sign Up
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text("Don't have an account? "),
-                    TransitionButton(page: const RegistrationScreen(), text: "Sign Up"),
-                  ],
-                ),
-                TextButton(
-                  onPressed: () {
-                    TransitionButton.navigateWithSlide(context, const ForgotPassword());
-                  },
-                  child: const Text("Forgot Password?"),
-                ),
-              ],
+              
+                  // Remember Me and Forgot Password
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [ 
+                      Row(
+                        children: [
+                          Checkbox(
+                            value: isChecked,
+                            onChanged: (value) {
+                              setState(() {
+                                isChecked = value!;
+                              });
+                            },
+                          ),
+                          const Text("Remember Me"),
+                        ],
+                      ),
+                    ],
+                  ),
+                  
+                  // Login Button
+                  const SizedBox(height: 15),
+                  AnimatedButton(
+                    width: 250,
+                    onPressed: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) {
+                        return const HomePage();
+                      }));
+                    },
+                    child: const Text(
+                      "Log In",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+              
+                  const SizedBox(height: 15),
+                  const Divider(height: 20, thickness: 1.5),
+              
+                  // Sign Up
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text("Don't have an account? "),
+                      TransitionButton(page: const RegistrationScreen(), text: "Sign Up"),
+                    ],
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      TransitionButton.navigateWithSlide(context, const ForgotPassword());
+                    },
+                    child: const Text("Forgot Password?"),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

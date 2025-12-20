@@ -38,38 +38,38 @@ class _AnimatedButtonState extends State<AnimatedButton> {
           duration: widget.duration,
           curve: Curves.easeInOut,
           width: widget.width ?? double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: isPressed
-                  ? [
-                      Color(0xFFD5A5C6),
-                      Color(0xFFB9B0E0),
-                    ]
-                  : [
-                      Color(0xFFF1B8D9),
-                      Color(0xFFCEC4F4),
-                    ],
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-            ),
-            borderRadius: BorderRadius.circular(30),
-            boxShadow: isPressed
-                ? [
-                    BoxShadow(
-                      color: Colors.purple.withOpacity(0.1),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ]
-                : [
-                    BoxShadow(
-                      color: Colors.purple.withOpacity(0.3),
-                      blurRadius: 8,
-                      spreadRadius: 0.5,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+          gradient: LinearGradient(
+            colors: isPressed
+              ? [
+                  Color.fromARGB(255, 197, 153, 183),
+                  Color.fromARGB(255, 163, 156, 198),
+                ]
+              : [
+                  Color.fromARGB(255, 241, 184, 217),
+                  Color.fromARGB(255, 206, 196, 244),
+                ],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+          ),
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: isPressed
+            ? [
+                BoxShadow(
+                  color: Colors.purple.withOpacity(0.1),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ]
+            : [
+                BoxShadow(
+                  color: Colors.purple.withOpacity(0.3),
+                  blurRadius: 8,
+                  spreadRadius: 0.5,
+                  offset: const Offset(0, 4),
+                ),
+              ],
           ),
           child: Center(child: widget.child),
         ),
