@@ -1,5 +1,6 @@
 import 'package:fix_my_road/animation/animated_button.dart';
 import 'package:fix_my_road/animation/transition.dart';
+import 'package:fix_my_road/main_screen.dart';
 import 'package:fix_my_road/provider/language_provider.dart';
 import 'package:fix_my_road/screen/forgot_password/forgot_password.dart';
 import 'package:fix_my_road/screen/home_page.dart';
@@ -151,8 +152,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   AnimatedButton(
                     width: 250,
                     onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) {
-                        return const HomePage();
+                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) {
+                        return const MainScreen();
                       }));
                     },
                     child: Text(
