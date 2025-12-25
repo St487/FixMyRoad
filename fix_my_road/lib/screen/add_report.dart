@@ -79,7 +79,16 @@ class _AddReportState extends State<AddReport> {
                 const SizedBox(height: 20),
 
                 // Type Dropdown
-                const Text("Type of Issue", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.only(left: 10),
+                  child: Text("Type of Issue", 
+                    style: TextStyle(
+                      fontSize: 16, 
+                      fontWeight: FontWeight.w500
+                    )
+                  )
+                ),
                 const SizedBox(height: 5),
                 DropdownButtonFormField<String>(
                   value: selectedType,
@@ -102,7 +111,16 @@ class _AddReportState extends State<AddReport> {
                 const SizedBox(height: 20),
 
                 // Title
-                const Text("Title", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.only(left: 10),
+                  child: Text("Title", 
+                    style: TextStyle(
+                      fontSize: 16, 
+                      fontWeight: FontWeight.w500
+                    )
+                  )
+                ),
                 const SizedBox(height: 5),
                 TextField(
                   decoration: InputDecoration(
@@ -116,7 +134,16 @@ class _AddReportState extends State<AddReport> {
                 const SizedBox(height: 20),
 
                 // Description
-                const Text("Description", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.only(left: 10),
+                  child: Text("Description", 
+                    style: TextStyle(
+                      fontSize: 16, 
+                      fontWeight: FontWeight.w500
+                    )
+                  )
+                ),
                 const SizedBox(height: 5),
                 TextField(
                   maxLines: 4,
@@ -131,7 +158,16 @@ class _AddReportState extends State<AddReport> {
                 const SizedBox(height: 20),
 
                 // Location Picker
-                const Text("Location", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.only(left: 10),
+                  child: Text("Location", 
+                    style: TextStyle(
+                      fontSize: 16, 
+                      fontWeight: FontWeight.w500
+                    )
+                  )
+                ),
                 const SizedBox(height: 5),
                 TextField(
                   readOnly: true,
@@ -207,7 +243,16 @@ class _AddReportState extends State<AddReport> {
 
                 const SizedBox(height: 20),
 
-                const Text("Photo", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.only(left: 10),
+                  child: Text("Photos", 
+                    style: TextStyle(
+                      fontSize: 16, 
+                      fontWeight: FontWeight.w500
+                    )
+                  )
+                ),
                 const SizedBox(height: 5),
                 GestureDetector(
                   onTap: () {
@@ -256,68 +301,116 @@ class _AddReportState extends State<AddReport> {
                       color: Colors.white,
                     ),
                     child: _selectedImages.isEmpty
-                        ? Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
-                              Icon(Icons.add_a_photo, size: 40, color: Colors.grey),
-                              SizedBox(height: 8),
-                              Text("Add Photos (max 3)", style: TextStyle(color: Colors.grey)),
+                      ? Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Icon(Icons.add_a_photo, size: 40, color: Colors.grey),
+                          SizedBox(height: 8),
+                          Text("Add Photos (max 3)", style: TextStyle(color: Colors.grey)),
+                        ],
+                      )
+                      : ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: _selectedImages.length < 3 ? _selectedImages.length + 1 : _selectedImages.length,
+                        itemBuilder: (context, index) {
+                          if (index == _selectedImages.length) {
+                            return GestureDetector(
+                              onTap: _showPickerOptions,
+                              child: Container(
+                                width: 100,
+                                margin: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade200,
+                                  borderRadius: BorderRadius.circular(15),
+                                  border: Border.all(color: Colors.grey.shade400, style: BorderStyle.solid),
+                                ),
+                                child: const Icon(Icons.add_a_photo, color: Colors.grey),
+                              ),
+                            );
+                          }
+                          return Stack(
+                            children: [
+                              Container(
+                                margin: const EdgeInsets.all(8),
+                                width: 120,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(15),
+                                  image: DecorationImage(
+                                    image: FileImage(_selectedImages[index]),
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                top: 2,
+                                right: 2,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      _selectedImages.removeAt(index);
+                                    });
+                                  },
+                                  child: const CircleAvatar(
+                                    radius: 12,
+                                    backgroundColor: Colors.black54,
+                                    child: Icon(Icons.close, size: 16, color: Colors.white),
+                                  ),
+                                ),
+                              ),
                             ],
-                          )
-                        : ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: _selectedImages.length < 3 ? _selectedImages.length + 1 : _selectedImages.length,
-                            itemBuilder: (context, index) {
-                              if (index == _selectedImages.length) {
-                                return GestureDetector(
-                                  onTap: _showPickerOptions,
-                                  child: Container(
-                                    width: 100,
-                                    margin: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey.shade200,
-                                      borderRadius: BorderRadius.circular(15),
-                                      border: Border.all(color: Colors.grey.shade400, style: BorderStyle.solid),
-                                    ),
-                                    child: const Icon(Icons.add_a_photo, color: Colors.grey),
-                                  ),
-                                );
-    }
-                              return Stack(
-                                children: [
-                                  Container(
-                                    margin: const EdgeInsets.all(8),
-                                    width: 120,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(15),
-                                      image: DecorationImage(
-                                        image: FileImage(_selectedImages[index]),
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                  ),
-                                  Positioned(
-                                    top: 2,
-                                    right: 2,
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        setState(() {
-                                          _selectedImages.removeAt(index);
-                                        });
-                                      },
-                                      child: const CircleAvatar(
-                                        radius: 12,
-                                        backgroundColor: Colors.black54,
-                                        child: Icon(Icons.close, size: 16, color: Colors.white),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              );
-                            },
-                          ),
+                          );
+                        },
+                      ),
                   ),
                 ),  
+                const SizedBox(height: 20),
+
+                // Submit Button
+                Center(
+                  child: Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(15),
+                      gradient: const LinearGradient(
+                        colors: [
+                          Color(0xFF9D50BB), // Rich Purple
+                          Color(0xFF6E48AA), // Deep Violet
+                        ],
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          // Purple shadow matches the theme better than blue
+                          color: const Color(0xFF9D50BB).withOpacity(0.3),
+                          spreadRadius: 1,
+                          blurRadius: 12,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                    ),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        // Submission logic
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                      ),
+                      child: const Text(
+                        "Submit Report",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white, // White pops perfectly against dark purple
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                    ),
+                  ),
+                )
               ],
             ),
           ),
