@@ -12,6 +12,17 @@ class AddReport extends StatefulWidget {
 }
 
 class _AddReportState extends State<AddReport> {
+  @override
+void dispose() {
+  titleController.dispose();
+  descriptionController.dispose();
+  _mapController?.dispose(); 
+  super.dispose();
+}
+
+  TextEditingController titleController = TextEditingController();
+  TextEditingController descriptionController = TextEditingController();
+
   String? _pickedAddress;
   GoogleMapController? _mapController;
 
@@ -19,11 +30,11 @@ class _AddReportState extends State<AddReport> {
   String? selectedType;
   final ImagePicker _picker = ImagePicker();
 
-  LatLng? _pickedLocation; // Selected location from map
+  LatLng? _pickedLocation;
   List<File> _selectedImages = [];
 
   Future<void> _pickFromCamera() async {
-    if (_selectedImages.length >= 3) return; // Safety check
+    if (_selectedImages.length >= 3) return;
 
     final XFile? image = await _picker.pickImage(
       source: ImageSource.camera,
@@ -73,8 +84,19 @@ class _AddReportState extends State<AddReport> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text("Add Your Report Here",
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: const Icon(Icons.arrow_back, color: Colors.black, size: 30),
+                    ),
+                    Expanded(
+                      child: Text("Add Your Report Here",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 20),
 
@@ -123,6 +145,7 @@ class _AddReportState extends State<AddReport> {
                 ),
                 const SizedBox(height: 5),
                 TextField(
+                  controller: titleController,
                   decoration: InputDecoration(
                     hintText: "Enter Title of Issue",
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
@@ -147,6 +170,7 @@ class _AddReportState extends State<AddReport> {
                 const SizedBox(height: 5),
                 TextField(
                   maxLines: 4,
+                  controller: descriptionController,
                   decoration: InputDecoration(
                     hintText: "Describe the issue in detail",
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
@@ -371,18 +395,10 @@ class _AddReportState extends State<AddReport> {
                     width: double.infinity,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(15),
-                      gradient: const LinearGradient(
-                        colors: [
-                          Color(0xFF9D50BB), // Rich Purple
-                          Color(0xFF6E48AA), // Deep Violet
-                        ],
-                        begin: Alignment.centerLeft,
-                        end: Alignment.centerRight,
-                      ),
+                      color: const Color(0xFF7864C8),
                       boxShadow: [
                         BoxShadow(
-                          // Purple shadow matches the theme better than blue
-                          color: const Color(0xFF9D50BB).withOpacity(0.3),
+                          color: const Color.fromARGB(91, 79, 79, 79),
                           spreadRadius: 1,
                           blurRadius: 12,
                           offset: const Offset(0, 6),
@@ -391,7 +407,11 @@ class _AddReportState extends State<AddReport> {
                     ),
                     child: ElevatedButton(
                       onPressed: () {
-                        // Submission logic
+                        _clearForm();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Report Submitted Successfully!")),
+                        );
+                        Navigator.pop(context);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.transparent,
@@ -452,4 +472,18 @@ class _AddReportState extends State<AddReport> {
       ),
     );
   }
+
+  void _clearForm() {
+    setState(() {
+      titleController.clear();
+      descriptionController.clear();
+
+      selectedType = null;
+      _pickedLocation = null;
+      _pickedAddress = null;
+      _selectedImages = [];
+    });
+  }
+
+
 }

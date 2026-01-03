@@ -144,7 +144,7 @@ class _MapPickerPageState extends State<MapPickerPage> {
                     IconButton(
                       icon: const Icon(Icons.arrow_back, color: Colors.black),
                       onPressed: () {
-                        Navigator.pop(context); // just go back without returning data
+                        Navigator.pop(context);
                       },
                     ),
                     Expanded(
