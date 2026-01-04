@@ -1,4 +1,4 @@
-import 'package:fix_my_road/screen/login_register/map_picker_page.dart';
+import 'package:fix_my_road/screen/map_picker_page.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
