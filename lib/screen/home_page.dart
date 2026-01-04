@@ -1,9 +1,11 @@
+import 'package:fix_my_road/screen/add_report.dart';
 import 'package:fix_my_road/support_widget/action_card.dart';
 import 'package:fix_my_road/support_widget/issue_card.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final Function(int) onNavigate;
+  const HomePage({super.key, required this.onNavigate});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -99,7 +101,12 @@ class _HomePageState extends State<HomePage> {
                         icon: Icons.add,
                         label: "Add Report",
                         color: const Color.fromARGB(255, 248, 187, 222),
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const AddReport()),
+                          );
+                        },
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -109,7 +116,9 @@ class _HomePageState extends State<HomePage> {
                         icon: Icons.map,
                         label: "View Map",
                         color: const Color.fromARGB(255, 204, 192, 249),
-                        onTap: () {},
+                        onTap: () {
+                          widget.onNavigate(1);
+                        },
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -119,7 +128,9 @@ class _HomePageState extends State<HomePage> {
                         icon: Icons.history,
                         label: "Report Status",
                         color: const Color.fromARGB(255, 252, 217, 192),
-                        onTap: () {},
+                        onTap: () {
+                          widget.onNavigate(3);
+                        },
                       ),
                     ),
                   ]
@@ -176,7 +187,7 @@ class _HomePageState extends State<HomePage> {
 
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.only(top: 10, bottom: 20),
+              padding: const EdgeInsets.only(top: 10, bottom: 110),
               physics: const BouncingScrollPhysics(),
               itemCount: 5, // Max 6 cards
               itemBuilder: (context, index) {

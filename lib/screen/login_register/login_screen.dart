@@ -67,7 +67,7 @@ class _LoginScreenState extends State<LoginScreen> {
             // Login form
             child: SingleChildScrollView(
               child: Column(
-                mainAxisSize: MainAxisSize.min, // <- makes height fit content
+                mainAxisSize: MainAxisSize.min,
                 children: [
 
                   // Language Switcher

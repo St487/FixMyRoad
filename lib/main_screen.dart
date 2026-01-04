@@ -1,5 +1,8 @@
+import 'package:fix_my_road/screen/add_report.dart';
 import 'package:fix_my_road/screen/home_page.dart';
 import 'package:fix_my_road/screen/profile.dart';
+import 'package:fix_my_road/screen/report_status.dart';
+import 'package:fix_my_road/screen/view_map.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_floating_bottom_bar/flutter_floating_bottom_bar.dart';
@@ -104,7 +107,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
                 Tab(icon: Icon(Icons.home_rounded, size: 28)),
                 Tab(icon: Icon(Icons.map_rounded, size: 28)),
                 Tab(child: SizedBox(width: 40)), 
-                Tab(icon: Icon(Icons.history_rounded, size: 28)),
+                Tab(icon: Icon(Icons.list_alt_rounded, size: 28)),
                 Tab(icon: Icon(Icons.person_rounded, size: 28)),
               ],
             ),
@@ -114,7 +117,12 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
                 width: 60, 
                 height: 60,
                 child: GestureDetector(
-                  onTap: () => tabController.animateTo(2),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const AddReport()),
+                    );
+                  },
                   child: Container(
                     decoration: BoxDecoration(
                       color: lightPurple,
@@ -145,10 +153,14 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
           dragStartBehavior: DragStartBehavior.down,
           physics: const BouncingScrollPhysics(),
           children: [
-            HomePage(), 
-            const Center(child: Text("Map Page")),
-            const Center(child: Text("Add Report Page")),
-            const Center(child: Text("Notifications Page")),
+            HomePage(
+              onNavigate: (index) {
+                tabController.animateTo(index);
+              },
+            ), 
+            ViewMap(),
+            AddReport(),
+            ReportStatus(),
             const ProfileScreen(),
           ],
         ),
