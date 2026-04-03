@@ -10,6 +10,11 @@ class LanguageProvider extends ChangeNotifier {
     loadLanguage();
   }
 
+  void setLanguage(bool english) {
+    _isEnglish = english;
+    notifyListeners(); // This tells all screens to rebuild
+  }
+
   Future<void> loadLanguage() async {
     final prefs = await SharedPreferences.getInstance();
     _isEnglish = prefs.getBool('isEnglish') ?? true;

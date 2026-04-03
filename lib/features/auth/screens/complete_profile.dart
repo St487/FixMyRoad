@@ -222,21 +222,30 @@ class _CompleteProfileState extends State<CompleteProfile> {
                             style: const TextStyle(fontSize: 16, color: Colors.black87),
                             items: stateList.map<DropdownMenuItem<String>>((s) {
                               return DropdownMenuItem<String>(
-                                value: s["iso2"].toString(), // Save ISO2 as value
+                                value: s["name"].toString(),
                                 child: Text(s["name"].toString()),
                               );
                             }).toList(),
-                            onChanged: (String? value) async {
-                              if (value == null) return;
+                            onChanged: (String? stateName) async {
+                              if (stateName == null) return;
 
-                              // Update controller state
-                              auth.updateState(value);
+                              // ✅ store NAME
+                              auth.updateState(stateName);
 
-                              // Fetch cities for selected state
-                              final cities = await LocationService.fetchCities(value);
-                              setState(() {
-                                cityList = cities;
-                              });
+                              // 🔥 find ISO for API
+                              final selectedState = stateList.firstWhere(
+                                (s) => s["name"] == stateName,
+                                orElse: () => {},
+                              );
+
+                              final iso = selectedState.isNotEmpty ? selectedState["iso2"] : null;
+
+                              if (iso != null) {
+                                final cities = await LocationService.fetchCities(iso);
+                                setState(() {
+                                  cityList = cities;
+                                });
+                              }
                             },
                             decoration: InputDecoration(
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
@@ -285,7 +294,7 @@ class _CompleteProfileState extends State<CompleteProfile> {
                               final result = await context.read<AuthController>().completeProfile();
                               if (!mounted) return;
                               if (result['status'] == 'success') {
-                                 CustomSnackbar.show(context, result['message'],Colors.white, Colors.greenAccent);
+                                CustomSnackbar.show(context, result['message'],Colors.white, Colors.greenAccent);
                                 Navigator.of(context).pushAndRemoveUntil(
                                   PageRouteBuilder(
                                     pageBuilder: (_, __, ___) => const LoginScreen(),

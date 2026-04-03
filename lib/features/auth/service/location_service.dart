@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 
 class LocationService {
   static const String baseUrl = "https://api.countrystatecity.in/v1";
-  static const String apiKey = "03daf6a42cdbbb2fd18636b3f9467b25bac6f911b9063f76c9f3f36075172f61"; // Replace with secure fetching
+  static const String apiKey = "55585edf8004c988498925f046667ef8fce10c095b42e0c1979f41394bc53c80";
 
   static Map<String, String> get headers => {
         'X-CSCAPI-KEY': apiKey,

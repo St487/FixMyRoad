@@ -1,3 +1,5 @@
+import 'package:fix_my_road/features/profile/screens/change_password.dart';
+
 class AppText {
 
   // ===== LOGIN SCREEN =====
@@ -61,5 +63,14 @@ class AppText {
   static String enterNewPassword(bool en) => en ? 'Enter your new password.' : 'Masukkan kata laluan baru anda.';
   static String newPassword(bool en) => en ? 'New Password' : 'Kata Laluan Baru';
   static String reset(bool en) => en ? 'Confirm' : 'Sahkan'; 
+
+  // ===== PROFILE SCREEN =====
+  static String myProfile(bool en) => en ? 'My Profile' : 'Profil Saya';
+  static String user(bool en) => en ? 'User' : 'Pengguna';
+  static String editProfile(bool en) => en ? 'Edit Profile' : 'Sunting Profil';
+  static String changePassword(bool en) => en ? 'Change Password' : 'Tukar Kata Laluan';
+  static String chooseLanguage(bool en) => en ? 'Choose Language' : 'Pilih Bahasa';
+  static String logout(bool en) => en ? 'Log Out' : 'Log Keluar';
+  
 
 }

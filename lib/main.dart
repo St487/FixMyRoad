@@ -1,4 +1,5 @@
 import 'package:fix_my_road/features/auth/screens/splashscreen.dart';
+import 'package:fix_my_road/features/profile/controllers/get_profile.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'provider/language_provider.dart';
@@ -10,6 +11,7 @@ void main() {
       providers: [
         ChangeNotifierProvider(create: (_) => LanguageProvider()),
         ChangeNotifierProvider(create: (_) => AuthController()), 
+        ChangeNotifierProvider(create: (_) => ProfileController()),
       ],
       child: const MyApp(),
     ),
