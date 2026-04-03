@@ -243,13 +243,14 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         AnimatedButton(
                           width: 250,
                           onPressed: () async {
-                            String result = await context.read<AuthController>().register();
-
-                            if (result == "success") {
+                            final result = await context.read<AuthController>().register();
+                            if (!mounted) return;
+                            if (result['status'] == 'success') {
+                              CustomSnackbar.show(context, result['message'],Colors.white, Colors.greenAccent);
                               TransitionButton.navigateWithSlide(context, const CompleteProfile());
-                              auth.clearRegistrationFields();
+                              // auth.clearRegistrationFields();
                             } else {
-                              CustomSnackbar.show(context, result, Colors.white, Colors.redAccent, );
+                              CustomSnackbar.show(context, result['message'] ?? "Error occurred", Colors.white, Colors.redAccent, );
                             }
                           },
                           child: Text(

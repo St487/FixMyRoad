@@ -282,9 +282,10 @@ class _CompleteProfileState extends State<CompleteProfile> {
                           AnimatedButton(
                             width: 250,
                             onPressed: () async {
-                              String result = await context.read<AuthController>().completeProfile();
-
-                              if (result == "success") {
+                              final result = await context.read<AuthController>().completeProfile();
+                              if (!mounted) return;
+                              if (result['status'] == 'success') {
+                                 CustomSnackbar.show(context, result['message'],Colors.white, Colors.greenAccent);
                                 Navigator.of(context).pushAndRemoveUntil(
                                   PageRouteBuilder(
                                     pageBuilder: (_, __, ___) => const LoginScreen(),
@@ -298,9 +299,9 @@ class _CompleteProfileState extends State<CompleteProfile> {
                                   ),
                                   (route) => false, // removes all existing routes
                                 );
-                                auth.clearProfileFields();
+                                auth.clearAll();
                               } else {
-                                CustomSnackbar.show(context, result,Colors.redAccent, Colors.white);
+                                CustomSnackbar.show(context, result['message'] ?? "Error occurred",Colors.redAccent, Colors.white);
                               }
                             },
                             

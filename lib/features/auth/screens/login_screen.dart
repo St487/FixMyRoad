@@ -18,6 +18,11 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  @override
+  void initState() {
+    super.initState();
+    Provider.of<AuthController>(context, listen: false).loadRememberMe();
+  }
   bool isChecked = false;
   bool _isPasswordVisible = false;
   bool isEnglish = true;
@@ -138,11 +143,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       Row(
                         children: [
                           Checkbox(
-                            value: isChecked,
+                            value: auth.rememberMe,
                             onChanged: (value) {
-                              setState(() {
-                                isChecked = value!;
-                              });
+                              auth.rememberMe = value!;
+                              auth.notifyListeners();
                             },
                           ),
                           Text(AppText.rememberMe(lang.isEnglish)),
@@ -159,6 +163,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       final success = await context.read<AuthController>().login();
 
                       if (success) {
+                        auth.clearAll();
                         Navigator.pushReplacement(context,
                             MaterialPageRoute(builder: (_) => const MainScreen()));
                       } else {
