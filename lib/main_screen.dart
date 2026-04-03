@@ -1,8 +1,8 @@
-import 'package:fix_my_road/screen/add_report.dart';
-import 'package:fix_my_road/screen/home_page.dart';
-import 'package:fix_my_road/screen/profile.dart';
-import 'package:fix_my_road/screen/report_status.dart';
-import 'package:fix_my_road/screen/view_map.dart';
+import 'package:fix_my_road/features/report/screens/add_report.dart';
+import 'package:fix_my_road/features/home/screens/home_page.dart';
+import 'package:fix_my_road/features/profile/screens/profile.dart';
+import 'package:fix_my_road/features/report/screens/report_status.dart';
+import 'package:fix_my_road/features/map/screens/view_map.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_floating_bottom_bar/flutter_floating_bottom_bar.dart';
@@ -151,7 +151,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
         body: (context, controller) => TabBarView(
           controller: tabController,
           dragStartBehavior: DragStartBehavior.down,
-          physics: const BouncingScrollPhysics(),
+          physics: const NeverScrollableScrollPhysics(),
           children: [
             HomePage(
               onNavigate: (index) {

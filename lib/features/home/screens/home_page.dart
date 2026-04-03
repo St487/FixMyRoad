@@ -1,6 +1,7 @@
-import 'package:fix_my_road/screen/add_report.dart';
-import 'package:fix_my_road/support_widget/action_card.dart';
-import 'package:fix_my_road/support_widget/issue_card.dart';
+import 'package:fix_my_road/features/report/screens/add_report.dart';
+import 'package:fix_my_road/features/chatbot/screens/ai_chatbot.dart';
+import 'package:fix_my_road/shared/support_widget/action_card.dart';
+import 'package:fix_my_road/shared/support_widget/issue_card.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
@@ -17,6 +18,19 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       extendBody: true,
       backgroundColor: const Color.fromARGB(255, 247, 235, 255),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 70.0),
+        child: FloatingActionButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const AiChatbot()),
+            );
+          },
+          backgroundColor: const Color.fromARGB(255, 217, 163, 239),
+          child: const Icon(Icons.smart_toy_rounded, color: Colors.white),
+        ),
+      ),
       body: Column(
         children: [
           Align(

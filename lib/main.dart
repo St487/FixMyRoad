@@ -1,12 +1,16 @@
-import 'package:fix_my_road/screen/login_register/splashscreen.dart';
+import 'package:fix_my_road/features/auth/screens/splashscreen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'provider/language_provider.dart';
+import 'features/auth/controllers/auth_controller.dart';
 
 void main() {
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => LanguageProvider(),
+   MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => LanguageProvider()),
+        ChangeNotifierProvider(create: (_) => AuthController()), 
+      ],
       child: const MyApp(),
     ),
   );

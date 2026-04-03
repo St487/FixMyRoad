@@ -22,7 +22,7 @@ class _MapPickerPageState extends State<MapPickerPage> {
   void initState() {
     super.initState();
     _requestPermission();
-    _updateAddress(_selectedPosition); // get initial address
+    _updateAddress(_selectedPosition); 
   }
 
   Future<void> _requestPermission() async {
@@ -113,7 +113,8 @@ class _MapPickerPageState extends State<MapPickerPage> {
             initialCameraPosition:
                 CameraPosition(target: _selectedPosition, zoom: 16),
             myLocationEnabled: true,
-            myLocationButtonEnabled: false,
+            myLocationButtonEnabled: false, 
+            zoomControlsEnabled: false,
             onMapCreated: (controller) => _controller = controller,
             onTap: (pos) async {
               setState(() => _selectedPosition = pos);
@@ -216,14 +217,39 @@ class _MapPickerPageState extends State<MapPickerPage> {
             ),
           ),
 
-          // Current Location Button at Bottom Right
           Positioned(
-            bottom: 100,
             right: 15,
-            child: FloatingActionButton(
-              mini: true,
-              onPressed: _goToCurrentLocation,
-              child: const Icon(Icons.my_location),
+            bottom: 40,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+
+                FloatingActionButton(
+                  mini: true,
+                  heroTag: "picker_gps",
+                  backgroundColor: Colors.white,
+                  child: const Icon(Icons.my_location, color: Color(0xFF7864C8)),
+                  onPressed: _goToCurrentLocation,
+                ),
+                const SizedBox(height: 12),
+                
+                FloatingActionButton(
+                  mini: true,
+                  heroTag: "picker_zoom_in", 
+                  backgroundColor: Colors.white,
+                  child: const Icon(Icons.add, color: Colors.black87),
+                  onPressed: () => _controller?.animateCamera(CameraUpdate.zoomIn()),
+                ),
+                const SizedBox(height: 8),
+
+                FloatingActionButton(
+                  mini: true,
+                  heroTag: "picker_zoom_out", 
+                  backgroundColor: Colors.white,
+                  child: const Icon(Icons.remove, color: Colors.black87),
+                  onPressed: () => _controller?.animateCamera(CameraUpdate.zoomOut()),
+                ),
+              ],
             ),
           ),
         ],

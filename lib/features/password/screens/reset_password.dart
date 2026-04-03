@@ -1,5 +1,5 @@
 import 'package:fix_my_road/provider/language_provider.dart';
-import 'package:fix_my_road/screen/login_register/login_screen.dart';
+import 'package:fix_my_road/features/auth/screens/login_screen.dart';
 import 'package:fix_my_road/utils/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

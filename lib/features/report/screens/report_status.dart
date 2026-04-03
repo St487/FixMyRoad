@@ -1,4 +1,4 @@
-import 'package:fix_my_road/screen/edit_report.dart';
+import 'package:fix_my_road/features/report/screens/edit_report.dart';
 import 'package:flutter/material.dart';
 
 class ReportStatus extends StatefulWidget {

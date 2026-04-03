@@ -1,7 +1,9 @@
-import 'package:fix_my_road/animation/animated_button.dart';
-import 'package:fix_my_road/animation/transition.dart';
+import 'package:fix_my_road/features/auth/controllers/auth_controller.dart';
+import 'package:fix_my_road/shared/animation/animated_button.dart';
+import 'package:fix_my_road/shared/animation/transition.dart';
 import 'package:fix_my_road/provider/language_provider.dart';
-import 'package:fix_my_road/screen/login_register/complete_profile.dart';
+import 'package:fix_my_road/features/auth/screens/complete_profile.dart';
+import 'package:fix_my_road/shared/support_widget/snack_bar.dart';
 import 'package:fix_my_road/utils/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -16,6 +18,7 @@ class RegistrationScreen extends StatefulWidget {
 class _RegistrationScreenState extends State<RegistrationScreen> {
   @override
   Widget build(BuildContext context) {
+    final auth = context.watch<AuthController>();
     final screenHeight = MediaQuery.of(context).size.height;
 
     final lang = context.watch<LanguageProvider>();
@@ -97,6 +100,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           ),
                         ),
                         TextField(
+                          controller: auth.registerEmail,
                           decoration: InputDecoration(
                             hintText: AppText.inputEmail(lang.isEnglish),
                             hintStyle: TextStyle(color: Colors.grey.shade500),
@@ -117,6 +121,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           ),
                         ),
                         TextField(
+                          controller: auth.verificationCode,
                           decoration: InputDecoration(
                             hintText: AppText.inputVerificationCode(lang.isEnglish),
                             hintStyle: TextStyle(color: Colors.grey.shade500),
@@ -156,6 +161,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           ),
                         ),
                         TextField(
+                          controller: auth.phone,
                           decoration: InputDecoration(
                             hintText: AppText.inputPhone(lang.isEnglish),
                             hintStyle: TextStyle(color: Colors.grey.shade500),
@@ -176,6 +182,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           ),
                         ),
                         TextField(
+                          controller: auth.password,
                           decoration: InputDecoration(
                             hintText: AppText.inputPassword(lang.isEnglish),
                             helperText: AppText.passwordHint(lang.isEnglish),
@@ -199,6 +206,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           ),
                         ),
                         TextField(
+                          controller: auth.confirmPassword,
                           decoration: InputDecoration(
                             hintText: AppText.inputConfirm(lang.isEnglish),
                             hintStyle: TextStyle(color: Colors.grey.shade500),
@@ -234,8 +242,15 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         SizedBox(height: 10),
                         AnimatedButton(
                           width: 250,
-                          onPressed: () {
-                            TransitionButton.navigateWithSlide(context, const CompleteProfile());
+                          onPressed: () async {
+                            String result = await context.read<AuthController>().register();
+
+                            if (result == "success") {
+                              TransitionButton.navigateWithSlide(context, const CompleteProfile());
+                              auth.clearRegistrationFields();
+                            } else {
+                              CustomSnackbar.show(context, result, Colors.white, Colors.redAccent, );
+                            }
                           },
                           child: Text(
                             AppText.register(lang.isEnglish),

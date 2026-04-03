@@ -1,6 +1,6 @@
-import 'package:fix_my_road/animation/transition.dart';
+import 'package:fix_my_road/shared/animation/transition.dart';
 import 'package:fix_my_road/provider/language_provider.dart';
-import 'package:fix_my_road/screen/forgot_password/passcode.dart';
+import 'package:fix_my_road/features/password/screens/passcode.dart';
 import 'package:fix_my_road/utils/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

@@ -1,9 +1,9 @@
-import 'package:fix_my_road/animation/transition.dart';
+import 'package:fix_my_road/shared/animation/transition.dart';
 import 'package:fix_my_road/provider/language_provider.dart';
 import 'package:fix_my_road/utils/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:fix_my_road/screen/forgot_password/reset_password.dart';
+import 'package:fix_my_road/features/password/screens/reset_password.dart';
 import 'package:provider/provider.dart';
 
 class PasscodeScreen extends StatefulWidget {

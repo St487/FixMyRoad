@@ -1,0 +1,38 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+class LocationService {
+  static const String baseUrl = "https://api.countrystatecity.in/v1";
+  static const String apiKey = "03daf6a42cdbbb2fd18636b3f9467b25bac6f911b9063f76c9f3f36075172f61"; // Replace with secure fetching
+
+  static Map<String, String> get headers => {
+        'X-CSCAPI-KEY': apiKey,
+        'Content-Type': 'application/json',
+      };
+
+  static Future<List<Map<String, dynamic>>> fetchStates() async {
+    final response = await http.get(
+      Uri.parse("$baseUrl/countries/MY/states"), // MY = Malaysia ISO2
+      headers: headers,
+    );
+
+    if (response.statusCode == 200) {
+      final List data = json.decode(response.body);
+      return List<Map<String, dynamic>>.from(data);
+    }
+    return [];
+  }
+
+  static Future<List<Map<String, dynamic>>> fetchCities(String stateIso) async {
+    final response = await http.get(
+      Uri.parse("$baseUrl/countries/MY/states/$stateIso/cities"),
+      headers: headers,
+    );
+
+    if (response.statusCode == 200) {
+      final List data = json.decode(response.body);
+      return List<Map<String, dynamic>>.from(data);
+    }
+    return [];
+  }
+}

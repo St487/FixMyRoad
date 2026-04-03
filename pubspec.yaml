@@ -43,6 +43,8 @@ dependencies:
   google_places_flutter: ^2.0.6
   geocoding: ^3.0.0
   geolocator: ^14.0.2
+  location: ^8.0.1
+  http: ^1.6.0
 
 dev_dependencies:
   flutter_test:

@@ -1,6 +1,9 @@
-import 'package:fix_my_road/animation/animated_button.dart';
+import 'package:fix_my_road/features/auth/controllers/auth_controller.dart';
+import 'package:fix_my_road/features/auth/service/location_service.dart';
+import 'package:fix_my_road/shared/animation/animated_button.dart';
 import 'package:fix_my_road/provider/language_provider.dart';
-import 'package:fix_my_road/screen/login_register/login_screen.dart';
+import 'package:fix_my_road/features/auth/screens/login_screen.dart';
+import 'package:fix_my_road/shared/support_widget/snack_bar.dart';
 import 'package:fix_my_road/utils/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -13,13 +16,27 @@ class CompleteProfile extends StatefulWidget {
 }
 
 class _CompleteProfileState extends State<CompleteProfile> {
-  final List<String> cities = ['Kuala Lumpur', 'George Town', 'Johor Bahru'];
-  final List<String> states = ['Selangor', 'Penang', 'Johor'];
+  @override
+  void initState() {
+    super.initState();
+    loadStates();
+  }
+
+  void loadStates() async {
+    final states = await LocationService.fetchStates();
+    setState(() {
+      stateList = states;
+    });
+  }
+
+  List<Map<String, dynamic>> stateList = [];
+  List<Map<String, dynamic>> cityList = [];
   String? selectedCity;
   String? selectedState;
 
   @override
   Widget build(BuildContext context) {
+    final auth = context.watch<AuthController>();
     final screenHeight = MediaQuery.of(context).size.height;
     final lang = context.watch<LanguageProvider>();
     return Scaffold(
@@ -102,6 +119,7 @@ class _CompleteProfileState extends State<CompleteProfile> {
                             ),
                           ),
                           TextField(
+                            controller: auth.firstName,
                             decoration: InputDecoration(
                               hintText: AppText.inputFirstName(lang.isEnglish),
                               hintStyle: TextStyle(color: Colors.grey.shade500),
@@ -124,6 +142,7 @@ class _CompleteProfileState extends State<CompleteProfile> {
                             ),
                           ),
                           TextField(
+                            controller: auth.lastName,
                             decoration: InputDecoration(
                               hintText: AppText.inputLastName(lang.isEnglish),
                               hintStyle: TextStyle(color: Colors.grey.shade500),
@@ -146,6 +165,7 @@ class _CompleteProfileState extends State<CompleteProfile> {
                             ),
                           ),
                           TextField(
+                            controller: auth.address,
                             keyboardType: TextInputType.multiline,
                             minLines: 3, 
                             maxLines: 6,
@@ -171,6 +191,7 @@ class _CompleteProfileState extends State<CompleteProfile> {
                             ),
                           ),
                           TextField(
+                            controller: auth.postalCode,
                             decoration: InputDecoration(
                               hintText: AppText.inputPostalCode(lang.isEnglish),
                               hintStyle: TextStyle(color: Colors.grey.shade500),
@@ -193,23 +214,32 @@ class _CompleteProfileState extends State<CompleteProfile> {
                             ),
                           ),
                           DropdownButtonFormField<String>(
-                            value: selectedState,
-                            isExpanded: true,
-                            elevation: 4,
+                            value: auth.state,
+                            hint: const Text("Select State"),
                             dropdownColor: Colors.white,
                             icon: const Icon(Icons.keyboard_arrow_down),
                             iconSize: 28,
                             style: const TextStyle(fontSize: 16, color: Colors.black87),
-                            items: states
-                                .map((s) => DropdownMenuItem(value: s, child: Text(s)))
-                                .toList(),
-                            onChanged: (v) => setState(() => selectedState = v),
+                            items: stateList.map<DropdownMenuItem<String>>((s) {
+                              return DropdownMenuItem<String>(
+                                value: s["iso2"].toString(), // Save ISO2 as value
+                                child: Text(s["name"].toString()),
+                              );
+                            }).toList(),
+                            onChanged: (String? value) async {
+                              if (value == null) return;
+
+                              // Update controller state
+                              auth.updateState(value);
+
+                              // Fetch cities for selected state
+                              final cities = await LocationService.fetchCities(value);
+                              setState(() {
+                                cityList = cities;
+                              });
+                            },
                             decoration: InputDecoration(
-                              hintText: AppText.inputState(lang.isEnglish),
-                              hintStyle: TextStyle(color: Colors.grey.shade500),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(15),
-                              ),
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
                               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                             ),
                           ),
@@ -226,23 +256,23 @@ class _CompleteProfileState extends State<CompleteProfile> {
                             ),
                           ),
                           DropdownButtonFormField<String>(
-                            value: selectedCity,
-                            isExpanded: true,
-                            elevation: 4,
+                            value: auth.city,
+                            hint: const Text("Select City"),
                             dropdownColor: Colors.white,
                             icon: const Icon(Icons.keyboard_arrow_down),
                             iconSize: 28,
                             style: const TextStyle(fontSize: 16, color: Colors.black87),
-                            items: cities
-                                .map((c) => DropdownMenuItem(value: c, child: Text(c)))
-                                .toList(),
-                            onChanged: (v) => setState(() => selectedCity = v),
+                            items: cityList.map<DropdownMenuItem<String>>((c) {
+                              return DropdownMenuItem<String>(
+                                value: c["name"].toString(),
+                                child: Text(c["name"].toString()),
+                              );
+                            }).toList(),
+                            onChanged: (String? value) {
+                              auth.updateCity(value);
+                            },
                             decoration: InputDecoration(
-                              hintText: AppText.inputCity(lang.isEnglish),
-                              hintStyle: TextStyle(color: Colors.grey.shade500),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(15),
-                              ),
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
                               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                             ),
                           ),
@@ -251,24 +281,29 @@ class _CompleteProfileState extends State<CompleteProfile> {
                           // Done Button
                           AnimatedButton(
                             width: 250,
-                            // onPressed: () {
-                            //   TransitionButton.replaceWithFade(context, const LoginScreen());
-                            // },
-                            onPressed: () {
-                              Navigator.of(context).pushAndRemoveUntil(
-                                PageRouteBuilder(
-                                  pageBuilder: (_, __, ___) => const LoginScreen(),
-                                  transitionsBuilder: (_, animation, __, child) {
-                                    return FadeTransition(
-                                      opacity: animation,
-                                      child: child,
-                                    );
-                                  },
-                                  transitionDuration: const Duration(milliseconds: 300),
-                                ),
-                                (route) => false, // removes all existing routes
-                              );
+                            onPressed: () async {
+                              String result = await context.read<AuthController>().completeProfile();
+
+                              if (result == "success") {
+                                Navigator.of(context).pushAndRemoveUntil(
+                                  PageRouteBuilder(
+                                    pageBuilder: (_, __, ___) => const LoginScreen(),
+                                    transitionsBuilder: (_, animation, __, child) {
+                                      return FadeTransition(
+                                        opacity: animation,
+                                        child: child,
+                                      );
+                                    },
+                                    transitionDuration: const Duration(milliseconds: 300),
+                                  ),
+                                  (route) => false, // removes all existing routes
+                                );
+                                auth.clearProfileFields();
+                              } else {
+                                CustomSnackbar.show(context, result,Colors.redAccent, Colors.white);
+                              }
                             },
+                            
                             child: Text(
                               AppText.doneButton(lang.isEnglish),
                               style: TextStyle(

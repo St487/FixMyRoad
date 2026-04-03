@@ -1,4 +1,4 @@
-import 'package:fix_my_road/screen/map_picker_page.dart';
+import 'package:fix_my_road/features/map/screens/map_picker_page.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
@@ -80,7 +80,7 @@ class _AddReportState extends State<AddReport> {
       body: Center(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 50, 20, 110),
+            padding: const EdgeInsets.fromLTRB(20, 50, 20, 50),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

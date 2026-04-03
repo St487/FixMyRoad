@@ -1,10 +1,11 @@
-import 'package:fix_my_road/animation/animated_button.dart';
-import 'package:fix_my_road/animation/transition.dart';
+import 'package:fix_my_road/features/auth/controllers/auth_controller.dart';
+import 'package:fix_my_road/shared/animation/animated_button.dart';
+import 'package:fix_my_road/shared/animation/transition.dart';
 import 'package:fix_my_road/main_screen.dart';
 import 'package:fix_my_road/provider/language_provider.dart';
-import 'package:fix_my_road/screen/forgot_password/forgot_password.dart';
-import 'package:fix_my_road/screen/home_page.dart';
-import 'package:fix_my_road/screen/login_register/registration_screen.dart';
+import 'package:fix_my_road/features/password/screens/forgot_password.dart';
+import 'package:fix_my_road/features/auth/screens/registration_screen.dart';
+import 'package:fix_my_road/shared/support_widget/snack_bar.dart';
 import 'package:fix_my_road/utils/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -24,6 +25,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
+    final auth = context.watch<AuthController>();
 
     // Set a max width for large screens
     double containerWidth = screenWidth > 600 ? 500 : screenWidth * 0.9;
@@ -94,6 +96,7 @@ class _LoginScreenState extends State<LoginScreen> {
               
                   // Email and Password fields
                   TextField(
+                    controller: auth.loginEmail,
                     decoration: InputDecoration(
                       labelText: AppText.email(lang.isEnglish),
                       labelStyle: const TextStyle(color: Colors.grey),
@@ -105,6 +108,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 20),
                   TextField(
+                    controller: auth.loginPassword,
                     obscureText: !_isPasswordVisible,
                     decoration: InputDecoration(
                       labelText: AppText.password(lang.isEnglish),
@@ -151,10 +155,15 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 15),
                   AnimatedButton(
                     width: 250,
-                    onPressed: () {
-                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) {
-                        return const MainScreen();
-                      }));
+                    onPressed: () async {
+                      final success = await context.read<AuthController>().login();
+
+                      if (success) {
+                        Navigator.pushReplacement(context,
+                            MaterialPageRoute(builder: (_) => const MainScreen()));
+                      } else {
+                        CustomSnackbar.show(context, "Wrong email or password", Colors.redAccent, Colors.white);
+                      }
                     },
                     child: Text(
                       AppText.login(lang.isEnglish),
