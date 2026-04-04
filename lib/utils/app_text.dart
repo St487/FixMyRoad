@@ -70,7 +70,60 @@ class AppText {
   static String editProfile(bool en) => en ? 'Edit Profile' : 'Sunting Profil';
   static String changePassword(bool en) => en ? 'Change Password' : 'Tukar Kata Laluan';
   static String chooseLanguage(bool en) => en ? 'Choose Language' : 'Pilih Bahasa';
+  static String contact(bool en) => en ? 'Contact' : 'Hubungi';
   static String logout(bool en) => en ? 'Log Out' : 'Log Keluar';
-  
+  static String save(bool en) => en ? 'Save' : 'Simpan';
+  static String contactUs(bool en) => en ? 'Contact Us' : 'Hubungi Kami';
+
+  // ===== ADD REPORT SCREEN =====
+  static const Map<String, Map<String, String>> types = {
+    'drainage': {
+      'en': 'Drainage',
+      'ms': 'Saliran / Banjir',
+    },
+    'pothole': {
+      'en': 'Pothole',
+      'ms': 'Lubang Jalan',
+    },
+    'public_transport': {
+      'en': 'Public Transport Facilities',
+      'ms': 'Kemudahan Pengangkutan Awam',
+    },
+    'road_sign': {
+      'en': 'Road Sign',
+      'ms': 'Papan Jalan',
+    },
+    'roadside_safety': {
+      'en': 'Roadside Safety',
+      'ms': 'Keselamatan Tepi Jalan',
+    },
+    'street_light': {
+      'en': 'Street Light',
+      'ms': 'Lampu Jalan',
+    },
+    'traffic_light': {
+      'en': 'Traffic Light',
+      'ms': 'Lampu Isyarat',
+    },
+    'other': {
+      'en': 'Other',
+      'ms': 'Lain-lain',
+    },
+  };
+  static List<String> getList(bool isEnglish) {
+    return types.values.map((e) => isEnglish ? e['en']! : e['ms']!).toList();
+  }
+  static String addReport(bool en) => en ? 'Add Report' : 'Tambah Laporan';
+  static String reportType(bool en) => en ? 'Type of Issue' : 'Jenis Masalah';
+  static String selectType(bool en) => en ? 'Select Report Type' : 'Pilih Jenis Laporan';
+  static String title(bool en) => en ? 'Title' : 'Tajuk';
+  static String inputTitle(bool en) => en ? 'Enter a brief title for your report' : 'Masukkan tajuk singkat';
+  static String description(bool en) => en ? 'Description' : 'Deskripsi'; 
+  static String inputDescription(bool en) => en ? 'Describe the issue you want to report' : 'Jelaskan masalah yang ingin anda laporkan';
+  static String location(bool en) => en ? 'Location' : 'Lokasi';
+  static String selectLocation(bool en) => en ? 'Select Location' : 'Pilih Lokasi';
+  static String photos(bool en) => en ? 'Photos' : 'Gambar';
+  static String addImages(bool en) => en ? 'Add Photos (max 3)' : 'Tambah Gambar (maks 3)';
+  static String submitReport(bool en) => en ? 'Submit Report' : 'Hantar Laporan';
 
 }

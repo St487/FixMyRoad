@@ -1,4 +1,5 @@
 <?php
+header("Access-Control-Allow-Origin: *");
 header('Content-Type: application/json');
 include 'config.php';
 
@@ -21,9 +22,11 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 }
 
 // Check if email already exists
-$stmt = $conn->prepare("SELECT user_id FROM users WHERE email = ?");
-$stmt->execute([$email]);
-if ($stmt->rowCount() > 0) {
+$stmt = $conn->prepare("SELECT user_id FROM user WHERE email = ?");
+$stmt->bind_param("s", $email);
+$stmt->execute();
+$stmt->store_result();
+if ($stmt->num_rows > 0) {
     echo json_encode(['status' => 'error', 'message' => 'Email already registered']);
     exit;
 }
@@ -32,10 +35,20 @@ if ($stmt->rowCount() > 0) {
 $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
 // Insert new user
-$stmt = $conn->prepare("INSERT INTO users (email, phone_no, password, created_at, updated_at) VALUES (?, ?, ?, NOW(), NOW())");
-if ($stmt->execute([$email, $phone_no, $hashedPassword])) {
-    echo json_encode(['status' => 'success', 'message' => 'Registration successful']);
+$stmt = $conn->prepare("INSERT INTO user (email, phone_no, password, created_at, updated_at) VALUES (?, ?, ?, NOW(), NOW())");
+$stmt->bind_param("sss", $email, $phone_no, $hashedPassword);
+if ($stmt->execute()) {
+    $user_id = $conn->insert_id;
+
+    echo json_encode([
+        'status' => 'success',
+        'message' => 'Registration successful',
+        'user_id' => $user_id,
+    ]);
 } else {
-    echo json_encode(['status' => 'error', 'message' => 'Failed to register user']);
+    echo json_encode([
+        'status' => 'error',
+        'message' => 'Failed to register user'
+    ]);
 }
 ?>

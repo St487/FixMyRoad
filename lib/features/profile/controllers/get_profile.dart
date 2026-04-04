@@ -118,13 +118,29 @@ class ProfileController extends ChangeNotifier {
     required String firstName,
     required String lastName,
     required String email,
-    String? phone,
+    required String phone,
     String? address,
     String? postalCode,
     String? state,
     String? city,
     File? profileImage,
   }) async {
+    if (phone.trim().isEmpty) {
+      return {"status": "error", "message": "Phone number is required"};
+    }
+
+    // Validate phone format
+    if (!RegExp(r'^(?:\+60|0)1[0-9]\d{7,8}$').hasMatch(phone)) {
+      return {"status": "error", "message": "Please enter a valid phone number"};
+    }
+
+  // Optional postal code validation
+    if (postalCode != null && postalCode.trim().isNotEmpty) {
+      if (!RegExp(r'^\d{5}$').hasMatch(postalCode)) {
+        return {"status": "error", "message": "Please enter a valid postal code"};
+      }
+    }
+
     try {
       isProfileLoading = true;
       notifyListeners();
@@ -169,14 +185,14 @@ class ProfileController extends ChangeNotifier {
         final data = jsonDecode(respStr);
         // Update local variables if needed
         this.firstName = data['first_name'] ?? this.firstName;
-this.lastName = data['last_name'] ?? this.lastName;
-this.email = data['email'] ?? this.email;
-this.phone = data['phone'] ?? this.phone;
-this.address = data['address'] ?? this.address;
-this.postalCode = data['postal_code'] ?? this.postalCode;
-this.state = data['state'] ?? this.state;
-this.city = data['city'] ?? this.city;
-this.profilePicture = data['profile_picture'] ?? this.profilePicture;
+        this.lastName = data['last_name'] ?? this.lastName;
+        this.email = data['email'] ?? this.email;
+        this.phone = data['phone'] ?? this.phone;
+        this.address = data['address'] ?? this.address;
+        this.postalCode = data['postal_code'] ?? this.postalCode;
+        this.state = data['state'] ?? this.state;
+        this.city = data['city'] ?? this.city;
+        this.profilePicture = data['profile_picture'] ?? this.profilePicture;
 
         notifyListeners();
         return {"status": "success", "message": data['message'] ?? "Profile updated"};

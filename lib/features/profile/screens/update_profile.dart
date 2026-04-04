@@ -1,9 +1,14 @@
+import 'dart:io';
+
 import 'package:fix_my_road/features/auth/service/location_service.dart';
 import 'package:fix_my_road/features/profile/controllers/get_profile.dart';
 import 'package:fix_my_road/provider/language_provider.dart';
 import 'package:fix_my_road/shared/support_widget/snack_bar.dart';
+import 'package:fix_my_road/utils/app_text.dart';
 import 'package:fix_my_road/utils/myconfig.dart';
 import 'package:flutter/material.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 class UpdateProfileScreen extends StatefulWidget {
@@ -31,8 +36,8 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
 void initState() {
   super.initState();
   WidgetsBinding.instance.addPostFrameCallback((_) async {
-    await _loadStates();          // MUST load first
-    await _loadProfileDefaults(); // THEN map state
+    await _loadStates();          
+    await _loadProfileDefaults(); 
   });
 }
 
@@ -81,21 +86,6 @@ Future<void> _loadProfileDefaults() async {
   }
 }
 
-  void _loadCities(String stateIso) async {
-  setState(() {
-    isLoadingCities = true;
-    cities = [];
-    selectedCity = null;
-  });
-
-  final data = await LocationService.fetchCities(stateIso);
-
-  setState(() {
-    cities = data;
-    isLoadingCities = false;
-  });
-}
-
   @override
   Widget build(BuildContext context) {
     final lang = context.watch<LanguageProvider>();
@@ -112,7 +102,7 @@ Future<void> _loadProfileDefaults() async {
           icon: Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text("Edit Profile", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+        title: Text(AppText.editProfile(lang.isEnglish), style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -125,11 +115,17 @@ Future<void> _loadProfileDefaults() async {
             Center(
               child: Stack(
                 children: [
-                  CircleAvatar(
-                    radius: 60,
-                    backgroundImage: auth.profilePicture != null
-                          ? NetworkImage("${MyConfig.myurl}/${auth.profilePicture}")
-                          : const AssetImage("assets/images/personIcon.jpg") as ImageProvider,
+                  Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.black, width: 3),
+                    ),
+                    child: CircleAvatar(
+                      radius: 60,
+                      backgroundImage: auth.profilePicture != null
+                            ? NetworkImage("${MyConfig.myurl}/${auth.profilePicture}")
+                            : const AssetImage("assets/images/personIcon.jpg") as ImageProvider,
+                    ),
                   ),
                   Positioned(
                     bottom: 0,
@@ -137,25 +133,38 @@ Future<void> _loadProfileDefaults() async {
                     child: CircleAvatar(
                       backgroundColor: primaryPurple,
                       radius: 18,
-                      child: Icon(Icons.camera_alt, size: 18, color: Colors.white),
+                      child: IconButton(
+                        icon: Icon(Icons.camera_alt, size: 18, color: Colors.white),
+                        onPressed: () {
+                          _showImageSourceDialog();
+                        },
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
             SizedBox(height: 30),
-
+            Text(auth.email, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            SizedBox(height: 30),
+            Divider(color: Colors.grey[300], thickness: 1),
             // Form Fields
-            _buildTextField("First Name", firstNameController),
-_buildTextField("Last Name", lastNameController),
-_buildTextField("Phone No", phoneController),
-_buildTextField("Address", addressController),
-_buildTextField("Postal Code", postalController),
+            _buildTextField(AppText.firstName(lang.isEnglish), firstNameController),
+            _buildTextField(AppText.lastName(lang.isEnglish), lastNameController),
+            _buildTextField(AppText.phoneNumber(lang.isEnglish), phoneController),
+            _buildTextField(AppText.address(lang.isEnglish), addressController),
+            _buildTextField(AppText.postalCode(lang.isEnglish), postalController),
 
             // State Dropdown
-            _buildLabel("State"),
+            _buildLabel(AppText.state(lang.isEnglish)),
             DropdownButtonFormField<String>(
-              value: auth.state,
+              value: states.any((s) =>
+                  s['name'].toString().toLowerCase() ==
+                  auth.state.toString().toLowerCase())
+              ? states.firstWhere((s) =>
+                      s['name'].toString().toLowerCase() ==
+                      auth.state.toString().toLowerCase())['name']
+              : null,
               decoration: _inputDecoration(),
               hint: Text(isLoadingStates ? "Loading States..." : "Select State"),
               items: states.map((state) {
@@ -168,7 +177,7 @@ _buildTextField("Postal Code", postalController),
                 if (stateName == null) return;
 
                 setState(() {
-                  auth.state = stateName; // store NAME
+                  auth.state = stateName;
                   selectedCity = null;
                 });
 
@@ -187,10 +196,10 @@ _buildTextField("Postal Code", postalController),
                 }
               },
             ),
-            SizedBox(height: 15),
+            SizedBox(height: 5),
 
             // City Dropdown
-            _buildLabel("City"),
+            _buildLabel(AppText.city(lang.isEnglish)),
             DropdownButtonFormField<String>(
               value: cities.any((c) => c['name'] == selectedCity)
                         ? selectedCity
@@ -223,8 +232,13 @@ _buildTextField("Postal Code", postalController),
                     phone: phoneController.text,
                     address: addressController.text,
                     postalCode: postalController.text,
-                    state: selectedStateIso, // ⚠️ if DB expects ID, you must convert ISO → ID
-                    city: selectedCity,
+                    state: (auth.state == null || auth.state!.isEmpty)
+                        ? null
+                        : auth.state,
+
+                    city: (selectedCity == null || selectedCity!.isEmpty)
+                        ? null
+                        : selectedCity,
                   );
 
                   if (result['status'] == 'success') {
@@ -244,12 +258,25 @@ _buildTextField("Postal Code", postalController),
                   }
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryPurple,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                backgroundColor: primaryPurple,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: Text("Save and Continue", style: TextStyle(fontSize: 16, color: Colors.white)),
+                elevation: 4,
+                ).copyWith(
+                  overlayColor: MaterialStateProperty.resolveWith<Color?>(
+                    (states) {
+                      if (states.contains(MaterialState.pressed)) {
+                        return Colors.white.withOpacity(0.2); // splash effect
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+                child: Text(AppText.save(lang.isEnglish), style: TextStyle(fontSize: 16, color: Colors.white)),
               ),
             ),
+            SizedBox(height: 20),
           ],
         ),
       ),
@@ -287,6 +314,89 @@ _buildTextField("Postal Code", postalController),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey[400]!)),
       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey[400]!)),
       focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: primaryPurple, width: 2)),
+    );
+  }
+
+  Future<void> pickImage(ImageSource source) async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: source);
+
+    if (pickedFile != null) {
+      CroppedFile? croppedFile = await ImageCropper().cropImage(
+      sourcePath: pickedFile.path,
+      aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1), // square
+      uiSettings: [
+        AndroidUiSettings(
+          toolbarTitle: 'Crop Image',
+          toolbarColor: const Color(0xFF7864C8),
+          toolbarWidgetColor: Colors.white,
+          initAspectRatio: CropAspectRatioPreset.square,
+          lockAspectRatio: true, // ensures square crop
+          cropStyle: CropStyle.circle, // optional: preview circle, still saves as square
+        ),
+        IOSUiSettings(
+          title: 'Crop Image',
+          aspectRatioLockEnabled: true,
+          resetAspectRatioEnabled: false,
+        ),
+      ],
+    );
+
+      if (croppedFile != null) {
+        
+        File file = File(croppedFile.path);
+
+        if (!mounted) return;
+
+        final controller = context.read<ProfileController>();
+        final result = await controller.uploadProfileImage(file);
+
+        if (result['status'] == 'success') {
+          await controller.getProfile(); 
+          if (!mounted) return;
+          CustomSnackbar.show(context, result['message'],Colors.white, Colors.greenAccent);
+        } else {
+          if (!mounted) return;
+          CustomSnackbar.show(context, result['message'] ?? "Upload failed", Colors.white, Colors.red);
+        }
+      }
+    }
+  }
+
+  void _showImageSourceDialog() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (context) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Padding(
+            padding: EdgeInsets.all(20),
+            child: Text(
+              "Choose Image Source",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.photo_library),
+            title: const Text("Gallery"),
+            onTap: () {
+              Navigator.pop(context);
+              pickImage(ImageSource.gallery);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.camera_alt),
+            title: const Text("Camera"),
+            onTap: () {
+              Navigator.pop(context);
+              pickImage(ImageSource.camera);
+            },
+          ),
+          const SizedBox(height: 20),
+        ],
+      ),
     );
   }
 }

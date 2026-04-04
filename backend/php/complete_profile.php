@@ -1,4 +1,5 @@
 <?php
+header("Access-Control-Allow-Origin: *");
 header('Content-Type: application/json');
 include 'config.php';
 
@@ -18,13 +19,13 @@ if (!$user_id || empty($first_name) || empty($last_name) || empty($address) || e
     exit;
 }
 
-// Optional: validate postal code (5 digits)
+// Postal code validation
 if (!preg_match('/^\d{5}$/', $postal_code)) {
     echo json_encode(['status' => 'error', 'message' => 'Postal code must be 5 digits']);
     exit;
 }
 
-// Handle optional profile picture upload
+// Optional profile picture
 $profile_picture = null;
 if (isset($_FILES['profile_picture'])) {
     $targetDir = "uploads/";
@@ -36,20 +37,17 @@ if (isset($_FILES['profile_picture'])) {
     }
 }
 
-// Update user profile
-$query = "UPDATE users SET first_name = ?, last_name = ?, address = ?, postal_code = ?, state = ?, city = ?, updated_at = NOW()";
-$params = [$first_name, $last_name, $address, $postal_code, $state, $city];
-
+// Build query
 if ($profile_picture) {
-    $query .= ", profile_picture = ?";
-    $params[] = $profile_picture;
+    $stmt = $conn->prepare("UPDATE user SET first_name=?, last_name=?, address=?, postal_code=?, state=?, city=?, profile_picture=?, updated_at=NOW() WHERE user_id=?");
+    $stmt->bind_param("sssssssi", $first_name, $last_name, $address, $postal_code, $state, $city, $profile_picture, $user_id);
+} else {
+    $stmt = $conn->prepare("UPDATE user SET first_name=?, last_name=?, address=?, postal_code=?, state=?, city=?, updated_at=NOW() WHERE user_id=?");
+    $stmt->bind_param("ssssssi", $first_name, $last_name, $address, $postal_code, $state, $city, $user_id);
 }
 
-$query .= " WHERE user_id = ?";
-$params[] = $user_id;
-
-$stmt = $conn->prepare($query);
-if ($stmt->execute($params)) {
+// Execute
+if ($stmt->execute()) {
     echo json_encode(['status' => 'success', 'message' => 'Profile updated successfully']);
 } else {
     echo json_encode(['status' => 'error', 'message' => 'Failed to update profile']);

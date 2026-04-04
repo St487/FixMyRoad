@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:fix_my_road/features/auth/screens/login_screen.dart';
 import 'package:fix_my_road/features/profile/controllers/get_profile.dart';
+import 'package:fix_my_road/features/profile/screens/contact.dart';
 import 'package:fix_my_road/features/profile/screens/update_profile.dart';
 import 'package:fix_my_road/provider/language_provider.dart';
 import 'package:fix_my_road/shared/support_widget/snack_bar.dart';
@@ -68,20 +69,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           : const AssetImage("assets/images/personIcon.jpg") as ImageProvider,
                         ),
                       ),
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: CircleAvatar(
-                          backgroundColor: Colors.white,
-                          radius: 18,
-                          child: IconButton(
-                            icon: const Icon(Icons.edit, color: Color(0xFF7864C8), size: 18),
-                            onPressed: () {
-                              _showImageSourceDialog();
-                            },
-                          ),
-                        ),
-                      ),
+                      // Positioned(
+                      //   bottom: 0,
+                      //   right: 0,
+                      //   child: CircleAvatar(
+                      //     backgroundColor: Colors.white,
+                      //     radius: 18,
+                      //     child: IconButton(
+                      //       icon: const Icon(Icons.edit, color: Color(0xFF7864C8), size: 18),
+                      //       onPressed: () {
+                      //         _showImageSourceDialog();
+                      //       },
+                      //     ),
+                      //   ),
+                      // ),
                     ],
                   ),
                   const SizedBox(height: 15),
@@ -137,6 +138,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       title: AppText.chooseLanguage(lang.isEnglish),
                       subtitle: lang.isEnglish ? "English" : "Malay",
                       onTap: () => _showLanguageDialog(),
+                    ),
+                    _buildProfileOption(
+                      icon: Icons.call,
+                      title: AppText.contact(lang.isEnglish),
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => ContactScreen()),
+                      ),
                     ),
                     _buildProfileOption(
                       icon: Icons.logout_rounded,
@@ -239,88 +248,88 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Future<void> pickImage(ImageSource source) async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: source);
+  // Future<void> pickImage(ImageSource source) async {
+  //   final picker = ImagePicker();
+  //   final pickedFile = await picker.pickImage(source: source);
 
-    if (pickedFile != null) {
-      CroppedFile? croppedFile = await ImageCropper().cropImage(
-      sourcePath: pickedFile.path,
-      aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1), // square
-      uiSettings: [
-        AndroidUiSettings(
-          toolbarTitle: 'Crop Image',
-          toolbarColor: const Color(0xFF7864C8),
-          toolbarWidgetColor: Colors.white,
-          initAspectRatio: CropAspectRatioPreset.square,
-          lockAspectRatio: true, // ensures square crop
-          cropStyle: CropStyle.circle, // optional: preview circle, still saves as square
-        ),
-        IOSUiSettings(
-          title: 'Crop Image',
-          aspectRatioLockEnabled: true,
-          resetAspectRatioEnabled: false,
-        ),
-      ],
-    );
+  //   if (pickedFile != null) {
+  //     CroppedFile? croppedFile = await ImageCropper().cropImage(
+  //     sourcePath: pickedFile.path,
+  //     aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1), // square
+  //     uiSettings: [
+  //       AndroidUiSettings(
+  //         toolbarTitle: 'Crop Image',
+  //         toolbarColor: const Color(0xFF7864C8),
+  //         toolbarWidgetColor: Colors.white,
+  //         initAspectRatio: CropAspectRatioPreset.square,
+  //         lockAspectRatio: true, // ensures square crop
+  //         cropStyle: CropStyle.circle, // optional: preview circle, still saves as square
+  //       ),
+  //       IOSUiSettings(
+  //         title: 'Crop Image',
+  //         aspectRatioLockEnabled: true,
+  //         resetAspectRatioEnabled: false,
+  //       ),
+  //     ],
+  //   );
 
-      if (croppedFile != null) {
+  //     if (croppedFile != null) {
         
-        File file = File(croppedFile.path);
+  //       File file = File(croppedFile.path);
 
-        if (!mounted) return;
+  //       if (!mounted) return;
 
-        final controller = context.read<ProfileController>();
-        final result = await controller.uploadProfileImage(file);
+  //       final controller = context.read<ProfileController>();
+  //       final result = await controller.uploadProfileImage(file);
 
-        if (result['status'] == 'success') {
-          await controller.getProfile(); 
-          if (!mounted) return;
-          CustomSnackbar.show(context, result['message'],Colors.white, Colors.greenAccent);
-        } else {
-          if (!mounted) return;
-          CustomSnackbar.show(context, result['message'] ?? "Upload failed", Colors.white, Colors.red);
-        }
-      }
-    }
-  }
+  //       if (result['status'] == 'success') {
+  //         await controller.getProfile(); 
+  //         if (!mounted) return;
+  //         CustomSnackbar.show(context, result['message'],Colors.white, Colors.greenAccent);
+  //       } else {
+  //         if (!mounted) return;
+  //         CustomSnackbar.show(context, result['message'] ?? "Upload failed", Colors.white, Colors.red);
+  //       }
+  //     }
+  //   }
+  // }
 
-  void _showImageSourceDialog() {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (context) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Padding(
-            padding: EdgeInsets.all(20),
-            child: Text(
-              "Choose Image Source",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-          ),
-          ListTile(
-            leading: const Icon(Icons.photo_library),
-            title: const Text("Gallery"),
-            onTap: () {
-              Navigator.pop(context);
-              pickImage(ImageSource.gallery);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.camera_alt),
-            title: const Text("Camera"),
-            onTap: () {
-              Navigator.pop(context);
-              pickImage(ImageSource.camera);
-            },
-          ),
-          const SizedBox(height: 20),
-        ],
-      ),
-    );
-  }
+  // void _showImageSourceDialog() {
+  //   showModalBottomSheet(
+  //     context: context,
+  //     shape: const RoundedRectangleBorder(
+  //         borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+  //     builder: (context) => Column(
+  //       mainAxisSize: MainAxisSize.min,
+  //       children: [
+  //         const Padding(
+  //           padding: EdgeInsets.all(20),
+  //           child: Text(
+  //             "Choose Image Source",
+  //             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+  //           ),
+  //         ),
+  //         ListTile(
+  //           leading: const Icon(Icons.photo_library),
+  //           title: const Text("Gallery"),
+  //           onTap: () {
+  //             Navigator.pop(context);
+  //             pickImage(ImageSource.gallery);
+  //           },
+  //         ),
+  //         ListTile(
+  //           leading: const Icon(Icons.camera_alt),
+  //           title: const Text("Camera"),
+  //           onTap: () {
+  //             Navigator.pop(context);
+  //             pickImage(ImageSource.camera);
+  //           },
+  //         ),
+  //         const SizedBox(height: 20),
+  //       ],
+  //     ),
+  //   );
+  // }
   
   
 }
