@@ -60,12 +60,19 @@ class _MapPickerPageState extends State<MapPickerPage> {
 
   Future<void> _updateAddress(LatLng pos) async {
     try {
-      List<Placemark> placemarks =
-          await placemarkFromCoordinates(pos.latitude, pos.longitude);
+      List<Placemark> placemarks = await placemarkFromCoordinates(pos.latitude, pos.longitude);
       if (placemarks.isNotEmpty) {
         final place = placemarks.first;
-        String formatted =
-            "${place.street}, ${place.subLocality}, ${place.locality}, ${place.country}";
+
+        // Only include non-empty parts
+        List<String?> parts = [
+          place.street,
+          place.subLocality,
+          place.locality,
+          place.country
+        ];
+        String formatted = parts.where((p) => p != null && p.isNotEmpty).join(', ');
+
         setState(() {
           _selectedAddress = formatted;
           _searchController.text = formatted;

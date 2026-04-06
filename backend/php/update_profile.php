@@ -22,8 +22,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $phone = $_POST['phone'] ?? "";
     $address = $_POST['address'] ?? "";
     $postal_code = $_POST['postal_code'] ?? "";
-    $state = $_POST['state'] ?? "";
-    $city = $_POST['city'] ?? "";
+    $state = isset($_POST['state']) && $_POST['state'] !== '' ? $_POST['state'] : null;
+    $city = isset($_POST['city']) && $_POST['city'] !== '' ? $_POST['city'] : null;
 
     // Handle image upload (optional)
     $profilePath = null;

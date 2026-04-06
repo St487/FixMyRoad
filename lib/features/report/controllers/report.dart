@@ -82,7 +82,7 @@ class ReportController extends ChangeNotifier {
         clearForm();
         return true;
       } else {
-        return Future.error(data['message'] ?? "Submission failed");
+        return Future.error(data['message'] ?? "Submi ssion failed");
       }
     } catch (e) {
       isSubmitting = false;
@@ -154,6 +154,11 @@ class ReportController extends ChangeNotifier {
           'images[]',
           selectedImages[i].path,
         ));
+      }
+
+      // ✅ VERY IMPORTANT
+      for (int i = 0; i < existingPhotos.length; i++) {
+        request.fields['existing_photos[$i]'] = existingPhotos[i];
       }
 
       var response = await request.send();

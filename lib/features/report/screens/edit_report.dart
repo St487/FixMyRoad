@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:fix_my_road/utils/myconfig.dart';
 
 class EditReport extends StatefulWidget {
 
@@ -36,13 +37,13 @@ class _EditReportState extends State<EditReport> {
 
   Map<String, String> issueTypeMapping = {
     "Banjir": "Drainage",
-    "Lain-lain": "Other",
     "Lubang Jalan": "Pothole",
     "Kemudahan Pengangkutan Awam": "Public Transport Facilities",
     "Tanda Jalan": "Road Sign",
     "Keselamatan tepi jalan": "Roadside Safety",
     "Lampu Jalan": "Street Light",
     "Lampu Isyarat": "Traffic Light",
+    "Lain-lain": "Other",
   };
   
   @override
@@ -67,12 +68,15 @@ class _EditReportState extends State<EditReport> {
   }
 
   Future<void> _pickFromCamera() async {
-    if (_selectedImages.length >= 3) return;
+    int remainingSlots = 3 - (_initialPhotoUrls.length + _selectedImages.length);
+    if (remainingSlots <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Maximum 3 photos allowed.")),
+      );
+      return;
+    }
 
-    final XFile? image = await _picker.pickImage(
-      source: ImageSource.camera,
-      imageQuality: 70,
-    );
+    final XFile? image = await _picker.pickImage(source: ImageSource.camera, imageQuality: 70);
 
     if (image != null) {
       setState(() {
@@ -82,17 +86,19 @@ class _EditReportState extends State<EditReport> {
   }
 
   Future<void> _pickFromGallery() async {
-    int remainingSlots = 3 - _selectedImages.length;
-    if (remainingSlots <= 0) return;
+    int remainingSlots = 3 - (_initialPhotoUrls.length + _selectedImages.length);
+    if (remainingSlots <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Maximum 3 photos allowed.")),
+      );
+      return;
+    }
 
-    final List<XFile> images = await _picker.pickMultiImage(
-      imageQuality: 70,
-    );
+    final List<XFile> images = await _picker.pickMultiImage(imageQuality: 70);
 
     if (images.isNotEmpty) {
       setState(() {
         final List<XFile> selectedLimit = images.take(remainingSlots).toList();
-        
         for (var image in selectedLimit) {
           _selectedImages.add(File(image.path));
         }
@@ -361,7 +367,7 @@ class _EditReportState extends State<EditReport> {
                       border: Border.all(color: Colors.black),
                       color: Colors.white,
                     ),
-                    child: _selectedImages.isEmpty
+                    child: (_initialPhotoUrls.isEmpty && _selectedImages.isEmpty)
                       ? Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: const [
@@ -372,9 +378,9 @@ class _EditReportState extends State<EditReport> {
                       )
                       : ListView.builder(
                         scrollDirection: Axis.horizontal,
-                        itemCount: _initialPhotoUrls.length + _selectedImages.length < 3 
+                        itemCount: _initialPhotoUrls.length + _selectedImages.length < 3
                             ? _initialPhotoUrls.length + _selectedImages.length + 1
-                            : _initialPhotoUrls.length + _selectedImages.length,
+                            : 3,
                         itemBuilder: (context, index) {
                           if (index == _initialPhotoUrls.length + _selectedImages.length) {
                             return GestureDetector(
@@ -480,7 +486,9 @@ class _EditReportState extends State<EditReport> {
                         controller.pickedAddress = _pickedAddress;
                         controller.pickedLocation = _pickedLocation;
                         controller.selectedImages = _selectedImages;
-                        controller.existingPhotos = _initialPhotoUrls; // ✅ ADD THIS
+                        controller.existingPhotos = _initialPhotoUrls.map((url) {
+                        return url.replaceFirst("${MyConfig.myurl}/", "");
+                      }).toList();
 
                         final validationError = controller.validateFields();
                         if (validationError != null) {
@@ -647,10 +655,14 @@ class _EditReportState extends State<EditReport> {
         _pickedLocation = LatLng(lat, lng);
         locationController.text = data['location_text'] ?? '';
       }
-
+      print("RAW PHOTOS: ${data['photos']}");
       // Load photos
-      _initialPhotoUrls = List<String>.from(data['photos'] ?? []);
+      _initialPhotoUrls = List<String>.from(data['photos'] ?? [])
+        .map((photo) => "${MyConfig.myurl}/$photo")
+        .toList();
     });
+
+    print("FULL URLS: $_initialPhotoUrls");
   }
 
 
