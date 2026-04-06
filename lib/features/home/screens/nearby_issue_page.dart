@@ -2,22 +2,51 @@ import 'package:fix_my_road/features/home/screens/issue_detail.dart';
 import 'package:flutter/material.dart';
 import 'package:fix_my_road/features/home/controllers/homeController.dart';
 import 'package:fix_my_road/utils/myconfig.dart';
+import 'package:provider/provider.dart';
 
-class NearbyIssuesPage extends StatelessWidget {
-  final HomeController controller;
-  const NearbyIssuesPage({super.key, required this.controller});
+class NearbyIssuesPage extends StatefulWidget {
+  const NearbyIssuesPage({super.key});
+
+  @override
+  State<NearbyIssuesPage> createState() => _NearbyIssuesPageState();
+}
+
+class _NearbyIssuesPageState extends State<NearbyIssuesPage> {
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Schedule after first frame to avoid setState during build
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final homeController = Provider.of<HomeController>(context, listen: false);
+      await homeController.initUserData();
+      if (mounted) {
+        setState(() {
+          _loading = false;
+        });
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Colors maintained from HomePage
     const kBackground = Color.fromARGB(255, 247, 235, 255);
     const kGradientStart = Color.fromARGB(255, 251, 195, 226);
     const kGradientEnd = Color.fromARGB(255, 252, 217, 192);
     const kAccentPurple = Color.fromARGB(255, 120, 100, 200);
 
+    final homeController = Provider.of<HomeController>(context);
+
+    if (_loading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       backgroundColor: kBackground,
-      // Standard AppBar instead of SliverAppBar
       appBar: AppBar(
         title: const Text(
           "Nearby Issues",
@@ -46,66 +75,31 @@ class NearbyIssuesPage extends StatelessWidget {
       ),
       body: RefreshIndicator(
         color: kAccentPurple,
-        onRefresh: () async => await controller.initUserData(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        onRefresh: () async => await homeController.initUserData(),
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.only(top: 15, left: 15, right: 15, bottom: 20),
           children: [
-            // Subtitle area
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
-              child: Text(
-                "Issues reported near your area",
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.black.withOpacity(0.5),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            
-            // Scrollable List Area
-            Expanded(
-              child: Builder(
-                builder: (_) {
-                  if (controller.locationPermissionDenied) {
-                    return const _StatusMessage(
-                      icon: Icons.location_off_rounded,
-                      message: "Location permission not allowed",
-                      color: Colors.redAccent,
-                    );
-                  }
-
-                  final filteredIssues = controller.nearbyIssues
-                      .where((issue) =>
-                          issue['status'] == 'approved' ||
-                          issue['status'] == 'in_progress')
-                      .toList();
-
-                  if (filteredIssues.isEmpty) {
-                    return const _StatusMessage(
-                      icon: Icons.map_outlined,
-                      message: "No nearby issues found.\nBe the first to report!",
-                      color: Colors.grey,
-                    );
-                  }
-
-                  return ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
-                    physics: const BouncingScrollPhysics(),
-                    itemCount: filteredIssues.length,
-                    itemBuilder: (context, index) {
-                      final issue = filteredIssues[index];
-                      bool isInProgress = issue['status'] == 'in_progress';
-
-                      return _BeautifulIssueCard(
-                        issue: issue,
-                        isInProgress: isInProgress,
-                      );
-                    },
-                  );
-                },
-              ),
-            ),
+            if (homeController.locationPermissionDenied)
+              const _StatusMessage(
+                icon: Icons.location_off_rounded,
+                message: "Location permission not allowed",
+                color: Colors.redAccent,
+              )
+            else if (homeController.filteredNearbyIssues.isEmpty)
+              const _StatusMessage(
+                icon: Icons.map_outlined,
+                message: "No nearby issues found.\nBe the first to report!",
+                color: Colors.grey,
+              )
+            else
+              ...homeController.filteredNearbyIssues.map((issue) {
+                bool isInProgress = issue['status'] == 'in_progress';
+                return _BeautifulIssueCard(
+                  issue: issue,
+                  isInProgress: isInProgress,
+                );
+              }).toList(),
           ],
         ),
       ),
@@ -139,10 +133,13 @@ class _BeautifulIssueCard extends StatelessWidget {
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            onTap: () { Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => IssueDetailPage(issueId: issue['id'])),
-            ); },
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => IssueDetailPage(issueId: issue['id'])),
+              );
+            },
             child: Padding(
               padding: const EdgeInsets.all(12),
               child: Row(
@@ -181,22 +178,23 @@ class _BeautifulIssueCard extends StatelessWidget {
                             color: Colors.black87,
                           ),
                         ),
-                        const SizedBox(height: 8), // Added slight spacing
+                        const SizedBox(height: 8),
                         Row(
                           children: [
-                            const Icon(Icons.location_on_outlined, size: 14, color: Colors.grey),
+                            const Icon(Icons.location_on_outlined,
+                                size: 14, color: Colors.grey),
                             const SizedBox(width: 4),
                             Text(
                               "${issue['distance']} away",
                               style: const TextStyle(fontSize: 13, color: Colors.grey),
                             ),
-                            const Spacer(), // Pushes the status tag to the right
+                            const Spacer(),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
-                                color: isInProgress 
-                                    ? Colors.orange.withOpacity(0.12) 
-                                    : Color.fromARGB(255, 120, 100, 200).withOpacity(0.12),
+                                color: isInProgress
+                                    ? Colors.orange.withOpacity(0.12)
+                                    : const Color.fromARGB(255, 120, 100, 200).withOpacity(0.12),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
@@ -204,13 +202,13 @@ class _BeautifulIssueCard extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,
-                                  color: isInProgress 
-                                      ? Colors.orange 
-                                      : Color.fromARGB(255, 120, 100, 200),
+                                  color: isInProgress
+                                      ? Colors.orange
+                                      : const Color.fromARGB(255, 120, 100, 200),
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 8), // Gap before the chevron
+                            const SizedBox(width: 8),
                           ],
                         ),
                       ],

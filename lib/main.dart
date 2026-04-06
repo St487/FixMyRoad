@@ -1,4 +1,6 @@
 import 'package:fix_my_road/features/auth/screens/splashscreen.dart';
+import 'package:fix_my_road/features/home/controllers/detailController.dart';
+import 'package:fix_my_road/features/home/controllers/homeController.dart';
 import 'package:fix_my_road/features/profile/controllers/get_profile.dart';
 import 'package:fix_my_road/features/report/controllers/report.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +16,8 @@ void main() {
         ChangeNotifierProvider(create: (_) => AuthController()), 
         ChangeNotifierProvider(create: (_) => ProfileController()),
         ChangeNotifierProvider(create: (_) => ReportController()),
+        ChangeNotifierProvider(create: (_) => HomeController()),
+        ChangeNotifierProvider(create: (_) => DetailController(issueId: 0)),
       ],
       child: const MyApp(),
     ),

@@ -201,7 +201,7 @@ class _HomePageState extends State<HomePage> {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => NearbyIssuesPage(controller: controller)),
+                            MaterialPageRoute(builder: (context) => NearbyIssuesPage()),
                           );
                         },
                         borderRadius: BorderRadius.circular(10),

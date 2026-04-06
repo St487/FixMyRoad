@@ -8,6 +8,7 @@ import 'package:fix_my_road/utils/myconfig.dart';
 
 class HomeController extends ChangeNotifier {
   bool _disposed = false;
+
   String greeting = "Hello";
   String firstName = "User";
   List<Map<String, dynamic>> nearbyIssues = [];
@@ -19,12 +20,15 @@ class HomeController extends ChangeNotifier {
     _disposed = true;
     super.dispose();
   }
+
   @override
   void notifyListeners() {
     if (!_disposed) {
       super.notifyListeners();
     }
   }
+
+  // ===================== Logic Methods =====================
 
   // Set greeting based on current time
   void setGreeting() {
@@ -51,6 +55,9 @@ class HomeController extends ChangeNotifier {
 
   // Fetch nearby issues based on location and user ID
   Future<void> fetchNearbyIssues(String userId) async {
+    locationPermissionDenied = false;
+    errorMessage = null;
+
     var status = await Permission.location.status;
     if (!status.isGranted) {
       status = await Permission.location.request();
@@ -74,7 +81,7 @@ class HomeController extends ChangeNotifier {
           "latitude": position.latitude.toString(),
           "longitude": position.longitude.toString(),
         },
-      );// Debugging line to check the response from the server
+      );
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -82,18 +89,21 @@ class HomeController extends ChangeNotifier {
           nearbyIssues = List<Map<String, dynamic>>.from(data['issues']);
         } else {
           errorMessage = data['message'] ?? "Failed to fetch nearby issues.";
+          nearbyIssues = [];
         }
       } else {
         errorMessage = "Server error: ${response.statusCode}";
+        nearbyIssues = [];
       }
     } catch (e) {
       errorMessage = "Error fetching nearby issues: $e";
+      nearbyIssues = [];
     }
 
     notifyListeners();
   }
 
-  // Fetch user profile from get profile PHP endpoint
+  // Fetch user profile
   Future<void> fetchUserProfile() async {
     final prefs = await SharedPreferences.getInstance();
     final userId = prefs.getInt("user_id");
@@ -108,9 +118,7 @@ class HomeController extends ChangeNotifier {
       final response = await http.post(
         Uri.parse("${MyConfig.myurl}/get_profile.php"),
         headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          "user_id": userId,
-        }),
+        body: json.encode({"user_id": userId}),
       );
 
       if (response.statusCode == 200) {
@@ -131,9 +139,9 @@ class HomeController extends ChangeNotifier {
     }
   }
 
+  // Initialize all user data
   Future<void> initUserData() async {
     setGreeting();
-
     await fetchUserProfile();
 
     final prefs = await SharedPreferences.getInstance();
@@ -142,5 +150,13 @@ class HomeController extends ChangeNotifier {
     if (userId.isNotEmpty) {
       await fetchNearbyIssues(userId);
     }
+  }
+
+  // Filtered issues for UI
+  List<Map<String, dynamic>> get filteredNearbyIssues {
+    return nearbyIssues
+        .where((issue) =>
+            issue['status'] == 'approved' || issue['status'] == 'in_progress')
+        .toList();
   }
 }
