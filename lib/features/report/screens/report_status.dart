@@ -37,23 +37,31 @@ class _ReportStatusState extends State<ReportStatus> {
 
   String formatStatus(String status) {
     switch (status.toLowerCase()) {
-      case 'pending':
-        return 'Pending';
+      case 'pending': return 'Pending';
+      case 'approved': return 'Approved';       // ✅ new
       case 'in_progress':
-        return 'In Progress';
-      case 'completed':
-        return 'Completed';
-      default:
-        return status;
+      case 'in progress': return 'In Progress';
+      case 'rejected': return 'Rejected';       // ✅ new
+      case 'completed': return 'Completed';
+      default: return status;
     }
   }
 
   String selectedFilter = 'All';
-  final List<String> filters = ['All', 'Pending', 'In Progress', 'Completed'];
+    final List<String> filters = [
+      'All', 
+      'Pending', 
+      'Approved',  
+      'In Progress', 
+      'Rejected',  
+      'Completed'
+  ];
   final Map<String, IconData> filterIcons = {
     'All': Icons.grid_view_rounded,
     'Pending': Icons.schedule_rounded,
+    'Approved': Icons.thumb_up_alt_rounded,
     'In Progress': Icons.pending_actions_rounded,
+    'Rejected': Icons.thumb_down_alt_rounded,
     'Completed': Icons.check_circle_outline_rounded,
   };
 
@@ -66,16 +74,18 @@ class _ReportStatusState extends State<ReportStatus> {
     final reports = reportController.reports;
 
     final filteredReports = selectedFilter == 'All'
-    ? reports
-    : reports.where((r) {
-        String status = (r['status'] ?? "").toString().toLowerCase();
-        String filter = selectedFilter.toLowerCase();
+      ? reports
+      : reports.where((r) {
+          String status = (r['status'] ?? "").toString().toLowerCase();
+          String filter = selectedFilter.toLowerCase();
 
-        // handle "In Progress"
-        if (filter == "in progress") filter = "in_progress";
+          // normalize spaces vs underscores
+          if (filter == "in progress") filter = "in_progress";
+          if (filter == "approved") filter = "approved";
+          if (filter == "rejected") filter = "rejected";
 
-        return status == filter;
-      }).toList();
+          return status == filter;
+        }).toList();
 
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 247, 235, 255),
@@ -272,7 +282,9 @@ class _ReportStatusState extends State<ReportStatus> {
   Color _getStatusColor(String status) {
     switch (status) {
       case 'Pending': return Colors.orange;
+      case 'Approved': return Colors.teal;       // ✅ new
       case 'In Progress': return Colors.blue;
+      case 'Rejected': return Colors.red;       // ✅ new
       case 'Completed': return Colors.green;
       default: return Colors.grey;
     }

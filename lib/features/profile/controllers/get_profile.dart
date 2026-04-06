@@ -60,7 +60,6 @@ class ProfileController extends ChangeNotifier {
         city = user['city'] ?? "";
         profilePicture = user['profile_picture'] ?? null;
 
-
         selectedCity = user['city'] ?? "";
   
       } else {
