@@ -3,12 +3,13 @@ import 'package:fix_my_road/features/home/screens/issue_detail.dart';
 import 'package:fix_my_road/features/home/screens/nearby_issue_page.dart';
 import 'package:fix_my_road/features/report/screens/add_report.dart';
 import 'package:fix_my_road/features/chatbot/screens/ai_chatbot.dart';
+import 'package:fix_my_road/provider/language_provider.dart';
 import 'package:fix_my_road/shared/support_widget/action_card.dart';
 import 'package:fix_my_road/shared/support_widget/issue_card.dart';
+import 'package:fix_my_road/utils/app_text.dart';
 import 'package:fix_my_road/utils/myconfig.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
   final Function(int) onNavigate;
@@ -34,15 +35,21 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final languageProvider = context.watch<LanguageProvider>();
+    final lang = languageProvider.isEnglish;
+
     return ChangeNotifierProvider(
       create: (_) {
         final controller = HomeController();
-        controller.setGreeting();
+        controller.setLanguage(lang); // Set initial language
         controller.initUserData(); 
         return controller;
       },
       child: Consumer<HomeController>(
         builder: (context, controller, _) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            controller.setLanguage(lang);
+          });
           return Scaffold(
             extendBody: true,
             backgroundColor: const Color.fromARGB(255, 247, 235, 255),
@@ -92,7 +99,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ),
                         Text(
-                          'Let\'s fix some roads today',
+                          AppText.letsFix(lang),
                           style: TextStyle(
                             fontSize: 16,
                           ),
@@ -107,7 +114,7 @@ class _HomePageState extends State<HomePage> {
                   child: Padding(
                     padding: const EdgeInsets.only(left: 20.0, bottom: 10.0),
                     child: Text(
-                      'What would you like to do?',
+                      AppText.whatToDo(lang),
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
@@ -143,7 +150,7 @@ class _HomePageState extends State<HomePage> {
                             width: 110, 
                             child: ActionCard(
                               icon: Icons.add,
-                              label: "Add Report",
+                              label: AppText.addReport(lang),
                               color: const Color.fromARGB(255, 248, 187, 222),
                               onTap: () {
                                 Navigator.push(
@@ -158,7 +165,7 @@ class _HomePageState extends State<HomePage> {
                             width: 110,
                             child: ActionCard(
                               icon: Icons.map,
-                              label: "View Map",
+                              label: AppText.viewMap(lang),
                               color: const Color.fromARGB(255, 204, 192, 249),
                               onTap: () {
                                 widget.onNavigate(1);
@@ -170,7 +177,7 @@ class _HomePageState extends State<HomePage> {
                             width: 110,
                             child: ActionCard(
                               icon: Icons.history,
-                              label: "Report Status",
+                              label: AppText.reportStatus(lang),
                               color: const Color.fromARGB(255, 252, 217, 192),
                               onTap: () {
                                 widget.onNavigate(3);
@@ -188,7 +195,7 @@ class _HomePageState extends State<HomePage> {
                     Padding(
                       padding: const EdgeInsets.only(left: 20.0),
                       child: Text(
-                        'Nearby Issues',
+                        AppText.nearbyIssues(lang),
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
@@ -209,9 +216,9 @@ class _HomePageState extends State<HomePage> {
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
-                            children: const [
+                            children: [
                               Text(
-                                'Show All',
+                                AppText.viewAll(lang),
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500,
@@ -235,14 +242,14 @@ class _HomePageState extends State<HomePage> {
                 Expanded(
                   child: RefreshIndicator(
                     onRefresh: () async {
-                      await controller.initUserData(); // Reload profile + nearby issues
+                      await controller.initUserData();
                     },
                     child: Builder(
                       builder: (_) {
                         if (controller.locationPermissionDenied) {
-                          return const Center(
+                          return Center(
                             child: Text(
-                              "Location permission not allowed",
+                              AppText.locationPermissionDenied(lang),
                               style: TextStyle(fontSize: 16, color: Colors.red),
                             ),
                           );
@@ -256,25 +263,29 @@ class _HomePageState extends State<HomePage> {
                             issue['status'] == 'approved' || issue['status'] == 'in_progress'
                           ).toList();
 
+                          final displayedIssues = filteredIssues.take(6).toList();
+
                           if (filteredIssues.isEmpty) {
-                            return const Center(
+                            return Center(
                               child: Text(
-                                "No nearby issues found.",
+                                AppText.noNearbyIssues(lang),
                                 style: TextStyle(fontSize: 16, color: Colors.grey),
                               ),
                             );
                           }
 
                           return ListView.builder(
-                            padding: const EdgeInsets.only(top: 10, bottom: 20),
-                            itemCount: filteredIssues.length,
+                            padding: const EdgeInsets.only(top: 10, bottom: 100),
+                            itemCount: displayedIssues.length,
                             itemBuilder: (context, index) {
                               final issue = filteredIssues[index];
-                              String statusText = issue['status'] == 'approved' ? 'Reported' : 'In Progress';
+                              String statusText = issue['status'] == 'approved' 
+                                  ? (controller.isEnglish ? 'Reported' : 'Dilaporkan') 
+                                  : (controller.isEnglish ? 'In Progress' : 'Dalam Proses');
 
                               return IssueCard(
-                                title: issue['issue_type'],
-                                distance: "${issue['distance']} away",
+                                title: AppText.issueType(issue['issue_type'], lang),
+                                distance: "${issue['distance']} ${AppText.away(lang)}",
                                 status: statusText,
                                 onTap: () {
                                   Navigator.push(

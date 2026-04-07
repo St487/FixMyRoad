@@ -1,4 +1,6 @@
 import 'package:fix_my_road/features/home/screens/issue_detail.dart';
+import 'package:fix_my_road/provider/language_provider.dart';
+import 'package:fix_my_road/utils/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:fix_my_road/features/home/controllers/homeController.dart';
 import 'package:fix_my_road/utils/myconfig.dart';
@@ -32,9 +34,11 @@ class _NearbyIssuesPageState extends State<NearbyIssuesPage> {
 
   @override
   Widget build(BuildContext context) {
+    final languageProvider = context.watch<LanguageProvider>();
+    final lang = languageProvider.isEnglish;
     const kBackground = Color.fromARGB(255, 247, 235, 255);
     const kGradientStart = Color.fromARGB(255, 251, 195, 226);
-    const kGradientEnd = Color.fromARGB(255, 252, 217, 192);
+    // const kGradientEnd = Color.fromARGB(255, 252, 217, 192);
     const kAccentPurple = Color.fromARGB(255, 120, 100, 200);
 
     final homeController = Provider.of<HomeController>(context);
@@ -48,8 +52,8 @@ class _NearbyIssuesPageState extends State<NearbyIssuesPage> {
     return Scaffold(
       backgroundColor: kBackground,
       appBar: AppBar(
-        title: const Text(
-          "Nearby Issues",
+        title: Text(
+          AppText.nearbyIssues(lang),
           style: TextStyle(
             color: Colors.black87,
             fontWeight: FontWeight.bold,
@@ -62,7 +66,7 @@ class _NearbyIssuesPageState extends State<NearbyIssuesPage> {
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [kGradientStart, kGradientEnd],
+              colors: [kGradientStart, kBackground],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -81,15 +85,15 @@ class _NearbyIssuesPageState extends State<NearbyIssuesPage> {
           padding: const EdgeInsets.only(top: 15, left: 15, right: 15, bottom: 20),
           children: [
             if (homeController.locationPermissionDenied)
-              const _StatusMessage(
+              _StatusMessage(
                 icon: Icons.location_off_rounded,
-                message: "Location permission not allowed",
+                message: AppText.locationPermissionDenied(lang),
                 color: Colors.redAccent,
               )
             else if (homeController.filteredNearbyIssues.isEmpty)
-              const _StatusMessage(
+              _StatusMessage(
                 icon: Icons.map_outlined,
-                message: "No nearby issues found.\nBe the first to report!",
+                message: AppText.beTheFirstToReport(lang),
                 color: Colors.grey,
               )
             else
@@ -111,10 +115,12 @@ class _BeautifulIssueCard extends StatelessWidget {
   final dynamic issue;
   final bool isInProgress;
 
-  const _BeautifulIssueCard({required this.issue, required this.isInProgress});
+  _BeautifulIssueCard({required this.issue, required this.isInProgress});
 
   @override
   Widget build(BuildContext context) {
+    final lang = context.watch<LanguageProvider>().isEnglish; // reactive
+
     return Container(
       margin: const EdgeInsets.only(bottom: 15),
       decoration: BoxDecoration(
@@ -137,7 +143,8 @@ class _BeautifulIssueCard extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => IssueDetailPage(issueId: issue['id'])),
+                  builder: (context) => IssueDetailPage(issueId: issue['id']),
+                ),
               );
             },
             child: Padding(
@@ -157,10 +164,8 @@ class _BeautifulIssueCard extends StatelessWidget {
                       child: Image.network(
                         "${MyConfig.myurl}/${issue['icon']}",
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Image.asset(
-                          "assets/default_icon.png",
-                          fit: BoxFit.cover,
-                        ),
+                        errorBuilder: (_, __, ___) =>
+                            Image.asset("assets/default_icon.png", fit: BoxFit.cover),
                       ),
                     ),
                   ),
@@ -171,7 +176,7 @@ class _BeautifulIssueCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          issue['issue_type'],
+                         AppText.issueType(issue['issue_type'], lang),
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -185,20 +190,25 @@ class _BeautifulIssueCard extends StatelessWidget {
                                 size: 14, color: Colors.grey),
                             const SizedBox(width: 4),
                             Text(
-                              "${issue['distance']} away",
-                              style: const TextStyle(fontSize: 13, color: Colors.grey),
+                              "${issue['distance']} ${AppText.away(lang)}", // now reactive
+                              style: const TextStyle(
+                                  fontSize: 13, color: Colors.grey),
                             ),
                             const Spacer(),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
                                 color: isInProgress
                                     ? Colors.orange.withOpacity(0.12)
-                                    : const Color.fromARGB(255, 120, 100, 200).withOpacity(0.12),
+                                    : const Color.fromARGB(255, 120, 100, 200)
+                                        .withOpacity(0.12),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
-                                isInProgress ? "In Progress" : "Reported",
+                                isInProgress
+                                  ? AppText.statusInProgress(lang)
+                                  : AppText.statusReported(lang),
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,

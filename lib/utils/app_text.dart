@@ -64,6 +64,33 @@ class AppText {
   static String newPassword(bool en) => en ? 'New Password' : 'Kata Laluan Baru';
   static String reset(bool en) => en ? 'Confirm' : 'Sahkan'; 
 
+  // ===== HOME SCREEN =====
+  static String letsFix(bool en) => en ? "Let's fix some roads today" : 'Mari kita perbaiki jalan hari ini';
+  static String whatToDo(bool en) => en ? 'What would you like to do?' : 'Apa yang ingin anda lakukan?';
+  static String viewMap(bool en) => en ? 'View Map' : 'Lihat Peta';
+  static String reportStatus(bool en) => en ? 'Report Status' : 'Status Laporan';
+  static String nearbyIssues(bool en) => en ? 'Nearby Issues' : 'Masalah Terdekat';
+  static String viewAll(bool en) => en ? 'Show All' : 'Tampilkan Semua';
+  static String locationPermissionDenied(bool en) => en ? 'Location permission not allowed' : 'Izin lokasi tidak diizinkan';
+  static String noNearbyIssues(bool en) => en ? 'No nearby issues found.' : 'Tidak ditemukan masalah terdekat.';
+  static String away(bool en) => en ? 'away' : 'dari sini';
+  static String issueNotFound(bool en) => en ? 'Failed to load issue details' : 'Gagal memuat detail masalah';
+  static String beTheFirstToReport(bool en) => en ? 'No nearby issues found.\nBe the first to report!' : 'Tidak ditemukan masalah terdekat.\nJadilah yang pertama melaporkan!';
+  static String resolutionJourney(bool en) => en ? 'Resolution Journey' : 'Perjalanan Penyelesaian';
+  static String reportedDate(bool en) => en ? 'Reported Date' : 'Tarikh Laporan';
+  static String priority(bool en) => en ? 'Priority' : 'Keutamaan';
+  static String stageApproved(bool en) => en ? "REPORTED" : "DILAPORKAN";
+  static String stageInProgress(bool en) => en ? "IN PROGRESS" : "DALAM PROSES";
+  static String stageCompleted(bool en) => en ? "COMPLETED" : "SELESAI";
+  static String statusReported(bool en) => en ? "Reported" : "Dilaporkan";
+  static String statusInProgress(bool en) => en ? "In Progress" : "Dalam Proses";
+  static String navigateToLocation(bool en) => en ? 'Navigate to Location' : 'Arahkan ke Lokasi';
+  static String openInMaps(bool en) => en ? 'Open in Maps' : 'Buka di Peta';
+  
+
+
+
+
   // ===== PROFILE SCREEN =====
   static String myProfile(bool en) => en ? 'My Profile' : 'Profil Saya';
   static String user(bool en) => en ? 'User' : 'Pengguna';
@@ -77,35 +104,35 @@ class AppText {
 
   // ===== ADD REPORT SCREEN =====
   static const Map<String, Map<String, String>> types = {
-    'drainage': {
+    'Drainage': {
       'en': 'Drainage',
       'ms': 'Saliran / Banjir',
     },
-    'pothole': {
+    'Pothole': {
       'en': 'Pothole',
       'ms': 'Lubang Jalan',
     },
-    'public_transport': {
+    'Public Transport': {
       'en': 'Public Transport Facilities',
       'ms': 'Kemudahan Pengangkutan Awam',
     },
-    'road_sign': {
+    'Road Sign': {
       'en': 'Road Sign',
       'ms': 'Papan Jalan',
     },
-    'roadside_safety': {
+    'Roadside Safety': {
       'en': 'Roadside Safety',
       'ms': 'Keselamatan Tepi Jalan',
     },
-    'street_light': {
+    'Street Light': {
       'en': 'Street Light',
       'ms': 'Lampu Jalan',
     },
-    'traffic_light': {
+    'Traffic Light': {
       'en': 'Traffic Light',
       'ms': 'Lampu Isyarat',
     },
-    'other': {
+    'Other': {
       'en': 'Other',
       'ms': 'Lain-lain',
     },
@@ -119,11 +146,71 @@ class AppText {
   static String title(bool en) => en ? 'Title' : 'Tajuk';
   static String inputTitle(bool en) => en ? 'Enter a brief title for your report' : 'Masukkan tajuk singkat';
   static String description(bool en) => en ? 'Description' : 'Deskripsi'; 
-  static String inputDescription(bool en) => en ? 'Describe the issue you want to report' : 'Jelaskan masalah yang ingin anda laporkan';
+  static String inputDescription(bool en) => en ? 'Describe the issue in detail' : 'Jelaskan masalah secara terperinci';
   static String location(bool en) => en ? 'Location' : 'Lokasi';
-  static String selectLocation(bool en) => en ? 'Select Location' : 'Pilih Lokasi';
+  static String selectLocation(bool en) => en ? 'Select Location from Map' : 'Pilih Lokasi dari Peta';
   static String photos(bool en) => en ? 'Photos' : 'Gambar';
   static String addImages(bool en) => en ? 'Add Photos (max 3)' : 'Tambah Gambar (maks 3)';
   static String submitReport(bool en) => en ? 'Submit Report' : 'Hantar Laporan';
+
+
+  static String issueType(String? type, bool isEnglish) {
+    if (type == null) return isEnglish ? "OTHER" : "LAIN-LAIN";
+
+    // 1. Normalize DB value (lowercase, trim)
+    final normalized = type.toLowerCase().trim();
+
+    const Map<String, Map<String, String>> mapping = {
+      "drainage": {"en": "Drainage", "bm": "Banjir"},
+      "other": {"en": "Other", "bm": "Lain-lain"},
+      "pothole": {"en": "Pothole", "bm": "Lubang Jalan"},
+      "public transport facilities": {"en": "Public Transport Facilities", "bm": "Kemudahan Pengangkutan Awam"},
+      "road sign": {"en": "Road Sign", "bm": "Tanda Jalan"},
+      "roadside safety": {"en": "Roadside Safety", "bm": "Keselamatan Tepi Jalan"},
+      "street light": {"en": "Street Light", "bm": "Lampu Jalan"},
+      "traffic light": {"en": "Traffic Light", "bm": "Lampu Isyarat"},
+    };
+
+    final mapped = mapping[normalized];
+
+    // 2. Get the translated string
+    String result = "";
+    if (mapped != null) {
+      result = isEnglish ? mapped["en"]! : mapped["bm"]!;
+    } else {
+      result = type; // Fallback to raw DB value if not found
+    }
+
+    return result;
+  }
+
+  //========REPORT STATUS========
+  static String noReports(bool en) => en ? 'No reports found.' : 'Tiada laporan dijumpai';
+  static String submittedOn(bool en) => en ? 'Submitted On' : 'Tarikh Hantar';
+  static String details(bool en) => en ? 'Details' : 'Butiran';
+
+  // ===== FILTERS =====
+  static String all(bool en) => en ? 'All' : 'Semua';
+  static String pending(bool en) => en ? 'Pending' : 'Menunggu';
+  static String approved(bool en) => en ? 'Approved' : 'Diluluskan';
+  static String inProgress(bool en) => en ? 'In Progress' : 'Dalam Proses';
+  static String rejected(bool en) => en ? 'Rejected' : 'Ditolak';
+  static String completed(bool en) => en ? 'Completed' : 'Selesai';
+
+  // ===== DETAIL PAGE =====
+  static String noPhoto(bool en) => en ? 'No photo provided.' : 'Tiada gambar disediakan.';
+  static String noDescription(bool en) => en ? 'No description provided.' : 'Tiada penerangan disediakan.';
+
+  // ======== EDIT REPORT ========
+  static String editReport(bool en) => en ? 'Edit Report' : 'Sunting Laporan';
+  static String maxUpload(bool en) => en ? 'You can only upload up to 3 photos.' : 'Anda hanya boleh memuat naik sehingga 3 foto.'; 
+  static String takePhoto(bool en) => en ? 'Take Photo' : 'Ambil Gambar';
+  static String chooseGallery(bool en) => en ? 'Choose from Gallery' : 'Pilih dari Galeri';  
+  static String addPhotos(bool en) => en ? 'Add Photos (max 3)' : 'Tambah Foto (maksimum 3)';  
+
+  //======== ERROR AND SUCCESS ========
+  static String updateReportSuccess(bool en) => en ? 'Report updated successfully!' : 'Laporan berjaya dikemas kini!';
+  static String failedToUpload(bool en) => en ? 'Failed to Upload. Please Try Again Later' : 'Gagal untuk Hantar Laporan, Sila Cuba Sebentar Lagi';
+  static String somethingWrong(bool en) => en ? 'Something went wrong. Please Try Again Later' : 'Sila Cuba Sebentar Lagi';
 
 }

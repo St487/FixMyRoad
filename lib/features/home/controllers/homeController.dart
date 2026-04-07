@@ -14,6 +14,15 @@ class HomeController extends ChangeNotifier {
   List<Map<String, dynamic>> nearbyIssues = [];
   bool locationPermissionDenied = false;
   String? errorMessage; // Store error messages for UI
+  bool isEnglish = true;
+
+  void setLanguage(bool value) {
+    if (isEnglish != value) {
+      isEnglish = value;
+      setGreeting(); // Refresh the greeting text in the new language
+      notifyListeners();
+    }
+  }
 
   @override
   void dispose() {
@@ -28,17 +37,14 @@ class HomeController extends ChangeNotifier {
     }
   }
 
-  // ===================== Logic Methods =====================
-
-  // Set greeting based on current time
   void setGreeting() {
     final hour = DateTime.now().hour;
     if (hour < 12) {
-      greeting = "Good Morning";
+      greeting = isEnglish ? "Good Morning" : "Selamat Pagi";
     } else if (hour < 18) {
-      greeting = "Good Afternoon";
+      greeting = isEnglish ? "Good Afternoon" : "Selamat Petang";
     } else {
-      greeting = "Good Evening";
+      greeting = isEnglish ? "Good Evening" : "Selamat Malam";
     }
     notifyListeners();
   }
@@ -63,7 +69,7 @@ class HomeController extends ChangeNotifier {
       status = await Permission.location.request();
       if (!status.isGranted) {
         locationPermissionDenied = true;
-        errorMessage = "Location permission denied.";
+        errorMessage = isEnglish ? "Location permission denied." : "Izin lokasi ditolak.`";
         notifyListeners();
         return;
       }
@@ -88,15 +94,15 @@ class HomeController extends ChangeNotifier {
         if (data['status'] == 'success') {
           nearbyIssues = List<Map<String, dynamic>>.from(data['issues']);
         } else {
-          errorMessage = data['message'] ?? "Failed to fetch nearby issues.";
+          errorMessage = data['message'] ?? isEnglish ? "Failed to fetch nearby issues." : "Gagal mengambil masalah terdekat.";
           nearbyIssues = [];
         }
       } else {
-        errorMessage = "Server error: ${response.statusCode}";
+        errorMessage = isEnglish ? "Server error: ${response.statusCode}" : "Kesalahan server: ${response.statusCode}";
         nearbyIssues = [];
       }
     } catch (e) {
-      errorMessage = "Error fetching nearby issues: $e";
+      errorMessage = isEnglish ? "Error fetching nearby issues: $e" : "Kesalahan mengambil masalah terdekat: $e";
       nearbyIssues = [];
     }
 
@@ -109,7 +115,7 @@ class HomeController extends ChangeNotifier {
     final userId = prefs.getInt("user_id");
 
     if (userId == null) {
-      errorMessage = "User ID not found. Please login again.";
+      errorMessage = isEnglish ? "User ID not found. Please login again." : "ID pengguna tidak ditemukan. Silakan login lagi.";
       notifyListeners();
       return;
     }
@@ -127,13 +133,13 @@ class HomeController extends ChangeNotifier {
           final userData = data['data'];
           setUserFirstName(userData['first_name'] ?? "User");
         } else {
-          errorMessage = data['message'] ?? "Failed to fetch user profile.";
+          errorMessage = data['message'] ?? isEnglish ? "Failed to fetch user profile." : "Gagal mengambil profil pengguna.";
         }
       } else {
-        errorMessage = "Server error: ${response.statusCode}";
+        errorMessage = isEnglish ? "Server error: ${response.statusCode}" : "Kesalahan server: ${response.statusCode}";
       }
     } catch (e) {
-      errorMessage = "Error fetching user profile: $e";
+      errorMessage = isEnglish ? "Error fetching user profile: $e" : "Kesalahan mengambil profil pengguna: $e";
       firstName = "User";
       notifyListeners();
     }

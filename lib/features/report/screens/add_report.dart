@@ -89,43 +89,63 @@ class _AddReportState extends State<AddReport> {
   @override
   Widget build(BuildContext context) {
     final report = context.watch<ReportController>();
-    final lang = context.watch<LanguageProvider>();
-    final List<String> issueTypes = AppText.getList(lang.isEnglish);
+    final languageProvider = context.watch<LanguageProvider>();
+    final lang = languageProvider.isEnglish;
+    final List<String> issueTypes = AppText.getList(lang);
+
+    const kBackground = Color.fromARGB(255, 247, 235, 255);
+    const kGradientStart = Color.fromARGB(255, 251, 195, 226);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      report.setLanguage(lang); 
+    });
+
     return WillPopScope(
         onWillPop: () async {
         report.clearForm();
-        return true; // allow pop
+        return true;
       },
       child: Scaffold(
-        backgroundColor: const Color.fromARGB(255, 247, 235, 255),
+        backgroundColor: kBackground,
+        appBar: AppBar(
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back, color: Colors.black),
+        onPressed: () {
+          context.read<ReportController>().clearForm();
+          Navigator.pop(context);
+        },
+      ),
+      title: Text(
+        AppText.addReport(lang),
+        style: const TextStyle(
+          color: Colors.black,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      centerTitle: true,
+      elevation: 0,
+      backgroundColor: kGradientStart,
+      flexibleSpace: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [kGradientStart, kBackground],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+      ),
+    ),
         body: Center(
           child: SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 50, 20, 50),
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 50),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      GestureDetector(
-                        onTap: () => Navigator.pop(context),
-                        child: const Icon(Icons.arrow_back, color: Colors.black, size: 30),
-                      ),
-                      Expanded(
-                        child: Text(AppText.addReport(lang.isEnglish),
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-      
-                  // Type Dropdown
                   Container(
                     width: double.infinity,
                     padding: EdgeInsets.only(left: 10),
-                    child: Text(AppText.reportType(lang.isEnglish),
+                    child: Text(AppText.reportType(lang),
                       style: TextStyle(
                         fontSize: 16, 
                         fontWeight: FontWeight.w500
@@ -145,15 +165,16 @@ class _AddReportState extends State<AddReport> {
                     onChanged: (v) {
                       setState(() {
                         selectedType = v; 
-                        if (lang.isEnglish) {
+                        if (lang) {
                           report.selectedType = v;
                         } else {
-                          report.selectedType = issueTypeMapping[v!] ?? v;
+                          // Map Malay to English
+                          report.selectedType = report.malayToEnglish[v!] ?? v;
                         }
                       });
                     },
                     decoration: InputDecoration(
-                      hintText: AppText.selectType(lang.isEnglish),
+                      hintText: AppText.selectType(lang),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                       fillColor: Colors.white,
@@ -166,7 +187,7 @@ class _AddReportState extends State<AddReport> {
                   Container(
                     width: double.infinity,
                     padding: EdgeInsets.only(left: 10),
-                    child: Text(AppText.title(lang.isEnglish),
+                    child: Text(AppText.title(lang),
                       style: TextStyle(
                         fontSize: 16, 
                         fontWeight: FontWeight.w500
@@ -177,7 +198,7 @@ class _AddReportState extends State<AddReport> {
                   TextField(
                     controller: report.titleController,
                     decoration: InputDecoration(
-                      hintText: AppText.inputTitle(lang.isEnglish),
+                      hintText: AppText.inputTitle(lang),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                       fillColor: Colors.white,
@@ -190,7 +211,7 @@ class _AddReportState extends State<AddReport> {
                   Container(
                     width: double.infinity,
                     padding: EdgeInsets.only(left: 10),
-                    child: Text(AppText.description(lang.isEnglish),
+                    child: Text(AppText.description(lang),
                       style: TextStyle(
                         fontSize: 16, 
                         fontWeight: FontWeight.w500
@@ -202,7 +223,7 @@ class _AddReportState extends State<AddReport> {
                     maxLines: 4,
                     controller: report.descriptionController,
                     decoration: InputDecoration(
-                      hintText: AppText.inputDescription(lang.isEnglish),
+                      hintText: AppText.inputDescription(lang),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                       fillColor: Colors.white,
@@ -215,7 +236,7 @@ class _AddReportState extends State<AddReport> {
                   Container(
                     width: double.infinity,
                     padding: EdgeInsets.only(left: 10),
-                    child: Text(AppText.location(lang.isEnglish),
+                    child: Text(AppText.location(lang),
                       style: TextStyle(
                         fontSize: 16, 
                         fontWeight: FontWeight.w500
@@ -227,7 +248,7 @@ class _AddReportState extends State<AddReport> {
         readOnly: true,
         controller: TextEditingController(text: report.pickedAddress ?? ''),
         decoration: InputDecoration(
-      hintText: AppText.selectLocation(lang.isEnglish),
+      hintText: AppText.selectLocation(lang),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       fillColor: Colors.white,
@@ -301,7 +322,7 @@ class _AddReportState extends State<AddReport> {
                   Container(
                     width: double.infinity,
                     padding: EdgeInsets.only(left: 10),
-                    child: Text(AppText.addReport(lang.isEnglish), 
+                    child: Text(AppText.photos(lang), 
                       style: TextStyle(
                         fontSize: 16, 
                         fontWeight: FontWeight.w500
@@ -466,6 +487,7 @@ class _AddReportState extends State<AddReport> {
                             setState(() {
                               selectedType = null;
                             });
+                            Navigator.pop(context);
                           }
                         } catch (e) {
                           CustomSnackbar.show(
@@ -493,7 +515,7 @@ class _AddReportState extends State<AddReport> {
                         ),
                       ),
                         child: Text(
-                          AppText.submitReport(lang.isEnglish),
+                          AppText.submitReport(lang),
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,

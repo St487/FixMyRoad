@@ -1,41 +1,76 @@
 import 'dart:io';
-import 'package:fix_my_road/provider/language_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:convert';
 import 'package:fix_my_road/utils/myconfig.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ReportController extends ChangeNotifier {
 
   TextEditingController titleController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
+  TextEditingController locationController = TextEditingController();
+  bool isEnglish = true;
 
   String? selectedType;
   LatLng? pickedLocation;
   String? pickedAddress;
+
   List<File> selectedImages = [];
 
   List<Map<String, dynamic>> reports = [];
-  List<String> existingPhotos = []; // ✅ ADD THIS
+  List<String> existingPhotos = [];
 
   bool isSubmitting = false;
+
+  void setLanguage(bool value) {
+    if (isEnglish != value) {
+      isEnglish = value;
+      notifyListeners();
+    }
+  }
+
+  Map<String, String> issueTypeMapping = {
+    "Saliran / Banjir": "Drainage",
+    "Lubang Jalan": "Pothole",
+    "Kemudahan Pengangkutan Awam": "Public Transport Facilities",
+    "Tanda Jalan": "Road Sign",
+    "Keselamatan tepi jalan": "Roadside Safety",
+    "Lampu Jalan": "Street Light",
+    "Lampu Isyarat": "Traffic Light",
+    "Lain-lain": "Other",
+  };
+
+  Map<String, String> malayToEnglish = {
+    "Saliran / Banjir": "Drainage",
+    "Lubang Jalan": "Pothole",
+    "Kemudahan Pengangkutan Awam": "Public Transport Facilities",
+    "Tanda Jalan": "Road Sign",
+    "Keselamatan Tepi Jalan": "Roadside Safety",
+    "Lampu Jalan": "Street Light",
+    "Lampu Isyarat": "Traffic Light",
+    "Lain-lain": "Other",
+  };
 
   void clearForm() {
     titleController.clear();
     descriptionController.clear();
+    locationController.clear();
     selectedType = null;
     pickedLocation = null;
     pickedAddress = null;
-    selectedImages = [];
+    selectedImages.clear();
+    existingPhotos.clear();
     notifyListeners();
   }
 
   String? validateFields() {
-    if (selectedType == null || selectedType!.trim().isEmpty) return "Please select type of issue.";
-    if (titleController.text.trim().isEmpty) return "Please enter title.";
-    if (descriptionController.text.trim().isEmpty) return "Please enter description.";
-    if (pickedLocation == null || pickedAddress == null) return "Please pick a location.";
+    if (selectedType == null || selectedType!.trim().isEmpty) return isEnglish ? "Please Select Type of Issue" : "Sila Pilih Jenis Masalah";
+    if (titleController.text.trim().isEmpty) return isEnglish ? "Please Enter Title" : "Sila Isi Tajuk";
+    if (descriptionController.text.trim().isEmpty) return isEnglish ? "Please Enter Description" : "Sila Isi Deskripsi";
+    if (pickedLocation == null || pickedAddress == null) return isEnglish ? "Please Pick a Location" : "Sila Pilih Lokasi";
+    if (existingPhotos.isEmpty && selectedImages.isEmpty) return isEnglish ? "At least one photo is required" : "Sekurang-kurangnya satu gambar diperlukan.";
     return null;
   }
 
@@ -82,12 +117,12 @@ class ReportController extends ChangeNotifier {
         clearForm();
         return true;
       } else {
-        return Future.error(data['message'] ?? "Submi ssion failed");
+        return Future.error(data['message'] ?? isEnglish ? "Submission Failed" : "Gagal untuk Hantar Laporan");
       }
     } catch (e) {
       isSubmitting = false;
       notifyListeners();
-      return Future.error("Error submitting report: $e");
+      return Future.error(isEnglish ? "Error Submission, Please Try Again Later" : "Gagal untuk Hantar Laporan, Sila Cuba Sebentar Lagi");
     }
   }
   
@@ -101,7 +136,6 @@ class ReportController extends ChangeNotifier {
       if (data['status'] == 'success') {
         reports = List<Map<String, dynamic>>.from(data['data']).map((report) {
 
-      // ✅ FIX ID TYPE HERE (IMPORTANT)
       if (report['id'] is String) {
         report['id'] = int.tryParse(report['id']) ?? 0;
       }
@@ -121,16 +155,16 @@ class ReportController extends ChangeNotifier {
       }).toList();
       notifyListeners();
       } else {
-        throw data['message'] ?? "Failed to fetch reports";
+        throw data['message'] ?? isEnglish ? "Failed to Fetch Reports" : "Gagal untuk Mendapatkan Laporan";
       }
     } catch (e) {
-      throw "Error fetching reports: $e";
+      throw isEnglish ? "Error to Fetch Reports" : "Gagal untuk Mendapatkan Laporan";
     }
   }
 
   Future<bool> updateReport(int reportId, int userId) async {
   final error = validateFields();
-    if (error != null) return Future.error(error);
+    if (error != null) return Future.error(isEnglish ? "All required fields must be filled." : "Semua ruangan mesti diisi.");
 
     isSubmitting = true;
     notifyListeners();
@@ -156,7 +190,6 @@ class ReportController extends ChangeNotifier {
         ));
       }
 
-      // ✅ VERY IMPORTANT
       for (int i = 0; i < existingPhotos.length; i++) {
         request.fields['existing_photos[$i]'] = existingPhotos[i];
       }
@@ -172,12 +205,12 @@ class ReportController extends ChangeNotifier {
         clearForm();
         return true;
       } else {
-        return Future.error(data['message'] ?? "Update failed");
+        return Future.error(data['message'] ?? isEnglish ? "Update Failed" : "Gagal untuk Kemas Kini");
       }
     } catch (e) {
       isSubmitting = false;
       notifyListeners();
-      return Future.error("Error updating report: $e");
+      return Future.error(isEnglish ? "Error. Update Failed" : "Gagal untuk Kemas Kini");
     }
   }
 
@@ -190,8 +223,54 @@ class ReportController extends ChangeNotifier {
     if (data['status'] == 'success') {
       return data['data'];
     } else {
-      throw data['message'];
+      throw data[isEnglish ? "Report Not Found" : "Laporan Tidak Ditemui"];
     }
+  }
+
+  Future<void> loadReportDetails(int reportId, bool isEnglish, List<String> issueTypes) async {
+    final data = await getReportById(reportId);
+
+    String? matchDropdown(List<String> list, String value) {
+      try {
+        return list.firstWhere((e) => e.toLowerCase() == value.toLowerCase());
+      } catch (e) {
+        return null;
+      }
+    }
+
+    titleController.text = data['title'] ?? '';
+    descriptionController.text = data['description'] ?? '';
+    locationController.text = data['location_text'] ?? '';
+    pickedAddress = data['location_text'];
+
+    String? apiIssueType = data['issue_type']?.trim();
+    if (apiIssueType != null) {
+      if (isEnglish) {
+        selectedType = matchDropdown(issueTypes, apiIssueType);
+      } else {
+        final englishToMalay = issueTypeMapping.map((k, v) => MapEntry(v.toLowerCase(), k));
+        String? malayValue = englishToMalay[apiIssueType.toLowerCase()];
+        if (malayValue != null) selectedType = matchDropdown(issueTypes, malayValue);
+      }
+    }
+
+    final lat = double.tryParse(data['latitude'].toString());
+    final lng = double.tryParse(data['longitude'].toString());
+    if (lat != null && lng != null) {
+      pickedLocation = LatLng(lat, lng);
+    }
+
+    existingPhotos = List<String>.from(data['photos'] ?? [])
+        .map((photo) => "${MyConfig.myurl}/$photo")
+        .toList();
+  }
+
+  Future<int?> getUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    final dynamic id = prefs.get('user_id');
+    if (id is int) return id;
+    if (id is String) return int.tryParse(id);
+    return null;
   }
   
 }

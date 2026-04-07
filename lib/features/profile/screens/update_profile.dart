@@ -39,10 +39,20 @@ void initState() {
     await _loadStates();          
     await _loadProfileDefaults(); 
   });
+  final auth = context.read<ProfileController>();
+
+    if (!mounted) return;
+
+    firstNameController.text = auth.firstName;
+    lastNameController.text = auth.lastName;
+    phoneController.text = auth.phone ?? "";
+    addressController.text = auth.address ?? "";
+    postalController.text = auth.postalCode ?? "";
 }
 
 Future<List<Map<String, dynamic>>> _loadStates() async {
   final data = await LocationService.fetchStates();
+  if (!mounted) return data;
   setState(() {
     states = data;
     isLoadingStates = false;
@@ -53,6 +63,8 @@ Future<List<Map<String, dynamic>>> _loadStates() async {
 Future<void> _loadProfileDefaults() async {
   final auth = context.read<ProfileController>();
   await auth.getProfile();
+
+  if (!mounted) return;
 
   if (auth.state != null && auth.state!.isNotEmpty) {
 
@@ -70,6 +82,8 @@ Future<void> _loadProfileDefaults() async {
       });
 
       final cityData = await LocationService.fetchCities(iso);
+
+      if (!mounted) return;
 
       setState(() {
         cities = cityData;
@@ -90,13 +104,11 @@ Future<void> _loadProfileDefaults() async {
   Widget build(BuildContext context) {
     final lang = context.watch<LanguageProvider>();
     final auth = context.watch<ProfileController>();
-    firstNameController.text = auth.firstName;
-    lastNameController.text = auth.lastName;
-    phoneController.text = auth.phone ?? "";
-    addressController.text = auth.address ?? "";
-    postalController.text = auth.postalCode ?? "";
+    const kBackground = Color.fromARGB(255, 247, 235, 255);
+    const kGradientStart = Color.fromARGB(255, 251, 195, 226);
 
     return Scaffold(
+      backgroundColor: kBackground,
       appBar: AppBar(
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.black),
@@ -104,8 +116,17 @@ Future<void> _loadProfileDefaults() async {
         ),
         title: Text(AppText.editProfile(lang.isEnglish), style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
         centerTitle: true,
-        backgroundColor: Colors.transparent,
         elevation: 0,
+        backgroundColor: kGradientStart,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [kGradientStart, kBackground],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(20),
@@ -176,6 +197,8 @@ Future<void> _loadProfileDefaults() async {
               onChanged: (stateName) async {
                 if (stateName == null) return;
 
+                if (!mounted) return;
+
                 setState(() {
                   auth.state = stateName;
                   selectedCity = null;
@@ -190,6 +213,7 @@ Future<void> _loadProfileDefaults() async {
 
                 if (iso != null) {
                   final cityData = await LocationService.fetchCities(iso);
+                  if (!mounted) return;
                   setState(() {
                     cities = cityData;
                   });

@@ -1,4 +1,6 @@
 import 'package:fix_my_road/features/home/controllers/detailController.dart';
+import 'package:fix_my_road/provider/language_provider.dart';
+import 'package:fix_my_road/utils/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -23,6 +25,8 @@ class _IssueDetailView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final languageProvider = context.watch<LanguageProvider>();
+    final lang = languageProvider.isEnglish;
     final controller = context.watch<DetailController>();
     const kPrimaryColor = Color(0xFF7864C8);
     const kBgColor = Color(0xFFF8F9FE);
@@ -36,7 +40,7 @@ class _IssueDetailView extends StatelessWidget {
     if (controller.errorMessage != null || controller.issue == null) {
       return Scaffold(
         appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
-        body: Center(child: Text(controller.errorMessage ?? "Failed to load issue details")),
+        body: Center(child: Text(controller.errorMessage ?? AppText.issueNotFound(lang))),
       );
     }
 
@@ -119,13 +123,14 @@ class _IssueDetailView extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          const SizedBox(height: 20),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.end,
-                            children: [_buildStatusChip(issue['status'])],
+                            children: [_buildStatusChip(issue['status'], lang)],
                           ),
                           const SizedBox(height: 10),
                           Text(
-                            (issue['issue_type'] ?? "Road Issue").toString().toUpperCase(),
+                            AppText.issueType(issue['issue_type'], lang).toUpperCase(),
                             style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, letterSpacing: -0.5),
                           ),
                           if (issue['title'] != null && issue['title'].toString().isNotEmpty)
@@ -137,19 +142,19 @@ class _IssueDetailView extends StatelessWidget {
                               ),
                             ),
                           const SizedBox(height: 20),
-                          const Text("Resolution Journey", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                          Text(AppText.resolutionJourney(lang), style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                           const SizedBox(height: 20),
-                          _buildModernStepper(issue['status']),
+                          _buildModernStepper(issue['status'], lang),
                           const SizedBox(height: 35),
                           Row(
                             children: [
-                              _buildSummaryCard("Reported Date", _formatDate(issue['created_at']), Icons.event_note, Colors.blue),
+                              _buildSummaryCard(AppText.reportedDate(lang), _formatDate(issue['created_at']), Icons.event_note, Colors.blue),
                               const SizedBox(width: 15),
-                              _buildSummaryCard("Priority", "Standard", Icons.bolt, Colors.orange),
+                              _buildSummaryCard(AppText.priority(lang), "Standard", Icons.bolt, Colors.orange),
                             ],
                           ),
                           const SizedBox(height: 30),
-                          const Text("Description", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                          Text(AppText.description(lang), style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                           const SizedBox(height: 12),
                           Container(
                             width: double.infinity,
@@ -193,6 +198,73 @@ class _IssueDetailView extends StatelessWidget {
               ),
             ],
           ),
+
+           Positioned(
+            bottom: 20,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Container(
+                // 1. Increase height if you want more vertical space
+                height: 65, 
+                // 2. Horizontal padding for the button's outer placement
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Material(
+                  borderRadius: BorderRadius.circular(30),
+                  elevation: 8,
+                  shadowColor: const Color(0xFF7864C8).withOpacity(0.5),
+                  child: Ink(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(30),
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF7864C8), Color(0xFF9C8CF0)],
+                      ),
+                    ),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(30),
+                      onTap: () {
+                        // TODO: navigation
+                      },
+                      child: Padding(
+                        // 3. Add internal padding here to create space between text and box edges
+                        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 8),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.navigation_rounded, color: Colors.white, size: 20),
+                                const SizedBox(width: 10), // Space between icon and text
+                                Text(
+                                  // Localized string from your AppText utility
+                                  AppText.navigateToLocation(lang).toUpperCase(),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 4), // Space between the two lines of text
+                            Text(
+                              AppText.openInMaps(lang),
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+
           // Back Button
           Positioned(
             top: MediaQuery.of(context).padding.top + 10,
@@ -211,7 +283,7 @@ class _IssueDetailView extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusChip(String status) {
+  Widget _buildStatusChip(String status, bool lang) {
     bool isInProgress = status == 'in_progress';
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -220,7 +292,7 @@ class _IssueDetailView extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
-        isInProgress ? "In Progress" : "Reported",
+        isInProgress ? AppText.statusInProgress(lang) : AppText.statusReported(lang),
         style: TextStyle(
           fontSize: 11,
           fontWeight: FontWeight.bold,
@@ -249,13 +321,27 @@ class _IssueDetailView extends StatelessWidget {
     );
   }
 
-  Widget _buildModernStepper(String status) {
+  Widget _buildModernStepper(String status, bool lang) {
     final stages = ['approved', 'in_progress', 'completed'];
+    String stageText;
     int currentIdx = stages.indexOf(status);
 
     return Row(
       children: List.generate(stages.length, (i) {
         bool isPassed = i <= currentIdx;
+        switch (stages[i]) {
+          case 'approved':
+            stageText = AppText.stageApproved(lang);
+            break;
+          case 'in_progress':
+            stageText = AppText.stageInProgress(lang);
+            break;
+          case 'completed':
+            stageText = AppText.stageCompleted(lang);
+            break;
+          default:
+            stageText = stages[i];
+        }
         return Expanded(
           child: Column(
             children: [
@@ -267,8 +353,9 @@ class _IssueDetailView extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 10),
+              
               Text(
-                stages[i].replaceAll('_', ' ').toUpperCase(),
+                stageText,
                 style: TextStyle(fontSize: 10, fontWeight: isPassed ? FontWeight.bold : FontWeight.normal, color: isPassed ? Colors.black : Colors.grey),
               )
             ],
