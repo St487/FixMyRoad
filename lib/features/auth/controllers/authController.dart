@@ -22,9 +22,16 @@ class AuthController extends ChangeNotifier {
   TextEditingController lastName = TextEditingController();
   TextEditingController address = TextEditingController();
   TextEditingController postalCode = TextEditingController();
-
+  bool isEnglish = true;
   String? state;
   String? city;
+
+  void setLanguage(bool value) {
+    if (isEnglish != value) {
+      isEnglish = value;
+      notifyListeners();
+    }
+  }
 
   //============================
   //          LOGIN
@@ -43,14 +50,17 @@ class AuthController extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> login() async {
+  Future<Map<String, dynamic>> login() async {
     isLoading = true;
     notifyListeners();
 
     if (loginEmail.text.isEmpty || loginPassword.text.isEmpty) {
       isLoading = false;
       notifyListeners();
-      return false;
+      return {
+        "success": false,
+        "message": isEnglish ? "Email and Password Cannot Be Empty" : "Emel dan Kata Laluan Tidak Boleh Dikosongkan",
+      };
     }
 
     try {
@@ -68,10 +78,7 @@ class AuthController extends ChangeNotifier {
       if (data['status'] == 'success') {
         final prefs = await SharedPreferences.getInstance();
 
-        // ✅ Save user_id
         await prefs.setInt("user_id", data['user_id']);
-
-        // ✅ Save remember me
         await prefs.setBool("remember_me", rememberMe);
 
         if (rememberMe) {
@@ -84,17 +91,28 @@ class AuthController extends ChangeNotifier {
 
         isLoading = false;
         notifyListeners();
-        return true;
+
+        return {
+          "success": true,
+          "message": isEnglish ? "Login Successful" : "Berjaya Log Masuk",
+          "user_id": data['user_id'],
+        };
       }
 
+      // Login failed
       isLoading = false;
       notifyListeners();
-      return false;
-
+      return {
+        "success": false,
+        "message": data['message'] ?? isEnglish ? "Wrong Email or Password" : "Emel atau Kata Laluan Salah",
+      };
     } catch (e) {
       isLoading = false;
       notifyListeners();
-      return false;
+      return {
+        "success": false,
+        "message": isEnglish ? "Something went wrong. Please Try Again Later" : "Ralat Berlaku. Sila Cuba Sebentar Lagi",
+      };
     }
   }
 
@@ -108,29 +126,29 @@ class AuthController extends ChangeNotifier {
         phone.text.isEmpty ||
         password.text.isEmpty ||
         confirmPassword.text.isEmpty) {
-      return {"status": "error", "message": "Please fill in all fields"};
+      return {"status": "error", "message": isEnglish ? "Please fill in all fields" : "Sila isi semua ruang kosong",};
     }  
 
     if (!RegExp(r'^(?:\+60|0)1[0-9]\d{7,8}$').hasMatch(phone.text)) {
-      return {"status": "error", "message": "Please enter a valid phone number"};
+      return {"status": "error", "message": isEnglish ? "Please enter a valid phone number" : "Sila masukkan nombor telefon yang sah"};
     }
 
     String emailPattern = r'^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$';
     RegExp regExp = RegExp(emailPattern);
     if (!regExp.hasMatch(registerEmail.text)) {
-      return {"status": "error", "message": "Please enter a valid email"};
+      return {"status": "error", "message": isEnglish ? "Please enter a valid email" : "Sila masukkan emel yang sah"};
     }
     
     if (!RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$').hasMatch(password.text)) {
-      return {"status": "error", "message": "Please enter a valid password"};
+      return {"status": "error", "message": isEnglish ? "Please enter a valid password" : "Sila masukkan kata laluan yang sah"};
     }
 
     if (password.text != confirmPassword.text) {
-      return {"status": "error", "message": "Password do not match"};
+      return {"status": "error", "message": isEnglish ? "Password do not match" : "Kata laluan tidak sepadan"};
     }
 
     if (!RegExp(r'^\d{4}$').hasMatch(verificationCode.text)) {
-      return {"status": "error", "message": "Incorrect verification code"};
+      return {"status": "error", "message": isEnglish ? "Incorrect verification code" : "Kod pengesahan salah"};
     }
 
     try {
@@ -154,7 +172,7 @@ class AuthController extends ChangeNotifier {
 
     return data;
     } catch (e) {
-      return {"status": "error", "message": "An error have occur, please try again later."};
+      return {"status": "error", "message": isEnglish ? "Something went wrong. Please try again later" : 'Sila cuba sebentar lagi'};
     }
   }
 
@@ -180,11 +198,11 @@ class AuthController extends ChangeNotifier {
       postalCode.text.isEmpty ||
       state == null ||
       city == null) {
-    return {"status": "error", "message": "Please complete all fields"};
+    return {"status": "error", "message": isEnglish ? "Please fill in all fields" : "Sila isi semua ruang kosong"};
   }
 
   if (!RegExp(r'^\d{5}$').hasMatch(postalCode.text)) {
-    return {"status": "error", "message": "Please enter a valid postal code"};
+    return {"status": "error", "message": isEnglish ? "Please enter a valid postal code" : "Sila masukkan poskod yang sah"};
   }
 
   try {
@@ -192,7 +210,7 @@ class AuthController extends ChangeNotifier {
     int? userId = prefs.getInt("user_id");
 
     if (userId == null) {
-      return {"status": "error", "message": "User not found. Please login again."};
+      return {"status": "error", "message": isEnglish ? "User not found. Please login again." : "Pengguna tidak ditemui. Sila log masuk semula."};
     }
     
     final response = await http.post(
@@ -213,7 +231,7 @@ class AuthController extends ChangeNotifier {
 
     return data;
   } catch (e) {
-    return {"status": "error", "message": "An error have occur, please try again later."};
+    return {"status": "error", "message": isEnglish ? 'Something went wrong. Please try again later' : 'Sila cuba sebentar lagi'};
   }
 }
 

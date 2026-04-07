@@ -41,7 +41,7 @@ class _HomePageState extends State<HomePage> {
     return ChangeNotifierProvider(
       create: (_) {
         final controller = HomeController();
-        controller.setLanguage(lang); // Set initial language
+        controller.setLanguage(lang);
         controller.initUserData(); 
         return controller;
       },
@@ -103,7 +103,7 @@ class _HomePageState extends State<HomePage> {
                           style: TextStyle(
                             fontSize: 16,
                           ),
-                        ),            
+                        ),
                       ],
                     ),
                   ),

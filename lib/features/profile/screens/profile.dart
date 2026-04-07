@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:fix_my_road/features/auth/screens/login_screen.dart';
-import 'package:fix_my_road/features/profile/controllers/get_profile.dart';
+import 'package:fix_my_road/features/profile/controllers/profileController.dart';
 import 'package:fix_my_road/features/profile/screens/contact.dart';
 import 'package:fix_my_road/features/profile/screens/update_profile.dart';
 import 'package:fix_my_road/provider/language_provider.dart';
@@ -33,7 +33,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<ProfileController>();
-    final lang = context.watch<LanguageProvider>();
+    final languageProvider = context.watch<LanguageProvider>();
+    final lang = languageProvider.isEnglish;
 
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 247, 235, 255),
@@ -51,7 +52,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Column(
                 children: [
                   Text(
-                    AppText.myProfile(lang.isEnglish),
+                    AppText.myProfile(lang),
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25, color: Colors.white),
                   ),
                   const SizedBox(height: 25),
@@ -87,7 +88,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: 15),
                   Text(
-                    auth.firstName.isEmpty ? AppText.user(lang.isEnglish) : auth.firstName,
+                    auth.firstName.isEmpty ? AppText.user(lang) : auth.firstName,
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
                   ),
                   Text(
@@ -119,29 +120,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   children: [
                     _buildProfileOption(
                       icon: Icons.person_sharp,
-                      title: AppText.editProfile(lang.isEnglish),
+                      title: AppText.editProfile(lang),
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => UpdateProfileScreen()),
+                          PageRouteBuilder(
+                            pageBuilder: (context, animation, secondaryAnimation) =>
+                                ChangeNotifierProvider.value(
+                              value: context.read<ProfileController>(),
+                              child: UpdateProfileScreen(),
+                            ),
+                            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                              return FadeTransition(
+                                opacity: animation,
+                                child: child,
+                              );
+                            },
+                            transitionDuration: const Duration(milliseconds: 300),
+                          ),
                         );
                       },
                     ),
                     _buildProfileOption(
                       icon: Icons.lock_outline_rounded,
-                      title: AppText.changePassword(lang.isEnglish),
+                      title: AppText.changePassword(lang),
                       onTap: () {
                       },
                     ),
                     _buildProfileOption(
                       icon: Icons.language_rounded,
-                      title: AppText.chooseLanguage(lang.isEnglish),
-                      subtitle: lang.isEnglish ? "English" : "Malay",
+                      title: AppText.chooseLanguage(lang),
+                      subtitle: lang ? "English" : "Malay",
                       onTap: () => _showLanguageDialog(),
                     ),
                     _buildProfileOption(
                       icon: Icons.call,
-                      title: AppText.contact(lang.isEnglish),
+                      title: AppText.contact(lang),
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => ContactScreen()),
@@ -149,7 +163,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     _buildProfileOption(
                       icon: Icons.logout_rounded,
-                      title: AppText.logout(lang.isEnglish),
+                      title: AppText.logout(lang),
                       onTap: () => _handleLogout(context),
                     ),
                   ],
@@ -210,9 +224,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       builder: (context) => Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Padding(
+          Padding(
             padding: EdgeInsets.all(20),
-            child: Text("Select Language", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           ),
           ListTile(
             title: const Text("English"),

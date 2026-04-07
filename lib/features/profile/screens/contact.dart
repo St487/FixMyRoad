@@ -5,8 +5,8 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ContactScreen extends StatelessWidget {
-  final String phoneNumber = "+60123456789"; // Replace with official number
-  final String emailAddress = "support@fixmyroad.com"; // Replace with official email
+  final String phoneNumber = "+60123456789";
+  final String emailAddress = "support@fixmyroad.com";
   final Color primaryColor = Colors.deepPurple;
 
   const ContactScreen({super.key});

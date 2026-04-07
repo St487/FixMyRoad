@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:fix_my_road/features/auth/service/location_service.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
@@ -21,6 +20,14 @@ class ProfileController extends ChangeNotifier {
   String? selectedCity;
   String? profilePicture;
   bool isProfileLoading = false;
+  bool isEnglish = true;
+
+  void setLanguage(bool value) {
+    if (isEnglish != value) {
+      isEnglish = value;
+      notifyListeners();
+    }
+  }
 
   Future<void> getProfile() async {
     isProfileLoading = true;
@@ -86,7 +93,7 @@ class ProfileController extends ChangeNotifier {
       int? userId = prefs.getInt("user_id");
 
       if (userId == null) {
-        return {"status": "error", "message": "User not logged in"};
+        return {"status": "error", "message": isEnglish ? "User Not Log In" : "Pengguna Tidak Log Masuk"};
       }
 
       var request = http.MultipartRequest(
@@ -109,7 +116,7 @@ class ProfileController extends ChangeNotifier {
       return json.decode(res.body);
 
     } catch (e) {
-      return {"status": "error", "message": "Upload failed"};
+      return {"status": "error", "message": isEnglish ? "Upload Failed" : "Gagal untuk Muat Naik"};
     }
   }
 
@@ -125,18 +132,18 @@ class ProfileController extends ChangeNotifier {
     File? profileImage,
   }) async {
     if (phone.trim().isEmpty) {
-      return {"status": "error", "message": "Phone number is required"};
+      return {"status": "error", "message": isEnglish ? "Phone Number is Required" : "Nombor Telefon Diperlukan"};
     }
 
     // Validate phone format
     if (!RegExp(r'^(?:\+60|0)1[0-9]\d{7,8}$').hasMatch(phone)) {
-      return {"status": "error", "message": "Please enter a valid phone number"};
+      return {"status": "error", "message": isEnglish ? "Please Enter a Valid Phone Number" : "Sila Masukkan Nombor Telefon yang Sah"};
     }
 
   // Optional postal code validation
     if (postalCode != null && postalCode.trim().isNotEmpty) {
       if (!RegExp(r'^\d{5}$').hasMatch(postalCode)) {
-        return {"status": "error", "message": "Please enter a valid postal code"};
+        return {"status": "error", "message": isEnglish ? "Please Enter a Valid Postal Code" : "Sila Masukkan Poskod yang Sah"};
       }
     }
 
@@ -150,7 +157,7 @@ class ProfileController extends ChangeNotifier {
       if (userId == null) {
         isProfileLoading = false;
         notifyListeners();
-        return {"status": "error", "message": "User ID missing"};
+        return {"status": "error", "message": isEnglish ? "User ID missing" : "ID pengguna hilang"};
       }
 
       var uri = Uri.parse("${MyConfig.myurl}/update_profile.php");
@@ -194,14 +201,34 @@ class ProfileController extends ChangeNotifier {
         this.profilePicture = data['profile_picture'] ?? this.profilePicture;
 
         notifyListeners();
-        return {"status": "success", "message": data['message'] ?? "Profile updated"};
+        String message;
+
+        if (data['message'] != null) {
+          if (data['message'] == "No changes made") {
+            message = isEnglish ? "No changes made" : "Tiada perubahan dibuat";
+          } else {
+            message = data['message'];
+          }
+        } else {
+          message = isEnglish ? "Profile Updated" : "Profil dikemas kini";
+        }
+
+        return {
+          "status": "success",
+          "message": message,
+        };
       } else {
-        return {"status": response.statusCode == 200 ? "success" : "error", "message": "Profile updated"};
+        return {
+          "status": "error",
+          "message": isEnglish
+              ? "Profile Update Failed"
+              : "Kemas Kini Profil Gagal"
+        };
       }
     } catch (e) {
       isProfileLoading = false;
       notifyListeners();
-      return {"status": "error", "message": e.toString()};
+      return {"status": "error", "message": isEnglish ? "Profile Update Failed" : "Kemas Kini Profil Gagal"};
     }
   }
 }

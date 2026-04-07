@@ -12,6 +12,14 @@ class DetailController extends ChangeNotifier {
   bool isLoading = true;
   int currentImageIndex = 0;
   String? errorMessage;
+  bool isEnglish = true;
+
+  void setLanguage(bool value) {
+    if (isEnglish != value) {
+      isEnglish = value;
+      notifyListeners();
+    }
+  }
 
   // Initialize controller
   Future<void> init() async {
@@ -33,13 +41,13 @@ class DetailController extends ChangeNotifier {
         if (data['status'] == 'success') {
           issue = data['data'];
         } else {
-          errorMessage = data['message'] ?? "Failed to fetch issue";
+          errorMessage = data['message'] ?? isEnglish ? "Failed to fetch issues" : "Gagal mendapatkan isu";
         }
       } else {
-        errorMessage = "HTTP Error: ${response.statusCode}";
+        errorMessage = isEnglish ? "Failed to fetch issues" : "Gagal mendapatkan isu";
       }
     } catch (e) {
-      errorMessage = "Error: $e";
+      errorMessage = isEnglish ? "Failed to fetch issues" : "Gagal mendapatkan isu";
     }
 
     isLoading = false;

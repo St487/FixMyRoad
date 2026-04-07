@@ -31,6 +31,10 @@ class _IssueDetailView extends StatelessWidget {
     const kPrimaryColor = Color(0xFF7864C8);
     const kBgColor = Color(0xFFF8F9FE);
 
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.setLanguage(lang);
+    });
+
     if (controller.isLoading) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator(color: kPrimaryColor)),
@@ -148,7 +152,7 @@ class _IssueDetailView extends StatelessWidget {
                           const SizedBox(height: 35),
                           Row(
                             children: [
-                              _buildSummaryCard(AppText.reportedDate(lang), _formatDate(issue['created_at']), Icons.event_note, Colors.blue),
+                              _buildSummaryCard(AppText.reportedDate(lang), _formatDate(issue['created_at'], lang), Icons.event_note, Colors.blue),
                               const SizedBox(width: 15),
                               _buildSummaryCard(AppText.priority(lang), "Standard", Icons.bolt, Colors.orange),
                             ],
@@ -161,7 +165,7 @@ class _IssueDetailView extends StatelessWidget {
                             padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
                             child: Text(
-                              issue['description'] ?? "No description provided",
+                              issue['description'] ?? AppText.noDescription(lang),
                               style: TextStyle(color: Colors.grey[800], height: 1.6, fontSize: 15),
                             ),
                           ),
@@ -183,7 +187,7 @@ class _IssueDetailView extends StatelessWidget {
                                 const SizedBox(width: 15),
                                 Expanded(
                                   child: Text(
-                                    issue['location_text'] ?? "Location details unavailable",
+                                    issue['location_text'] ?? AppText.locationDetailUnavailable(lang),
                                     style: const TextStyle(fontSize: 14, height: 1.4, fontWeight: FontWeight.w500),
                                   ),
                                 ),
@@ -205,9 +209,7 @@ class _IssueDetailView extends StatelessWidget {
             right: 0,
             child: Center(
               child: Container(
-                // 1. Increase height if you want more vertical space
-                height: 65, 
-                // 2. Horizontal padding for the button's outer placement
+                height: 65,
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Material(
                   borderRadius: BorderRadius.circular(30),
@@ -226,7 +228,6 @@ class _IssueDetailView extends StatelessWidget {
                         // TODO: navigation
                       },
                       child: Padding(
-                        // 3. Add internal padding here to create space between text and box edges
                         padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 8),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -235,9 +236,8 @@ class _IssueDetailView extends StatelessWidget {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 const Icon(Icons.navigation_rounded, color: Colors.white, size: 20),
-                                const SizedBox(width: 10), // Space between icon and text
+                                const SizedBox(width: 10), 
                                 Text(
-                                  // Localized string from your AppText utility
                                   AppText.navigateToLocation(lang).toUpperCase(),
                                   style: const TextStyle(
                                     color: Colors.white,
@@ -247,7 +247,7 @@ class _IssueDetailView extends StatelessWidget {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 4), // Space between the two lines of text
+                            const SizedBox(height: 4),
                             Text(
                               AppText.openInMaps(lang),
                               style: const TextStyle(
@@ -365,11 +365,11 @@ class _IssueDetailView extends StatelessWidget {
     );
   }
 
-  static String _formatDate(String dateStr) {
+  static String _formatDate(String dateStr, bool lang) {
     try {
       return DateFormat('MMM dd, yyyy').format(DateTime.parse(dateStr));
     } catch (e) {
-      return "Unknown Date";
+      return AppText.unknownDate(lang);
     }
   }
 }

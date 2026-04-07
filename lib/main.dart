@@ -1,12 +1,12 @@
 import 'package:fix_my_road/features/auth/screens/splashscreen.dart';
 import 'package:fix_my_road/features/home/controllers/detailController.dart';
 import 'package:fix_my_road/features/home/controllers/homeController.dart';
-import 'package:fix_my_road/features/profile/controllers/get_profile.dart';
-import 'package:fix_my_road/features/report/controllers/report.dart';
+import 'package:fix_my_road/features/profile/controllers/profileController.dart';
+import 'package:fix_my_road/features/report/controllers/reportController.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'provider/language_provider.dart';
-import 'features/auth/controllers/auth_controller.dart';
+import 'features/auth/controllers/authController.dart';
 
 void main() {
   runApp(

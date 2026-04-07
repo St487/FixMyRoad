@@ -1,4 +1,4 @@
-import 'package:fix_my_road/features/auth/controllers/auth_controller.dart';
+import 'package:fix_my_road/features/auth/controllers/authController.dart';
 import 'package:fix_my_road/shared/animation/animated_button.dart';
 import 'package:fix_my_road/shared/animation/transition.dart';
 import 'package:fix_my_road/main_screen.dart';
@@ -8,6 +8,7 @@ import 'package:fix_my_road/features/auth/screens/registration_screen.dart';
 import 'package:fix_my_road/shared/support_widget/snack_bar.dart';
 import 'package:fix_my_road/utils/app_text.dart';
 import 'package:flutter/material.dart';
+import 'package:google_places_flutter/model/place_details.dart';
 import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -35,7 +36,12 @@ class _LoginScreenState extends State<LoginScreen> {
     // Set a max width for large screens
     double containerWidth = screenWidth > 600 ? 500 : screenWidth * 0.9;
 
-    final lang = context.watch<LanguageProvider>();
+    final languageProvider = context.watch<LanguageProvider>();
+    final lang = languageProvider.isEnglish;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      auth.setLanguage(lang); 
+    });
 
     return Scaffold(
       body: Container(
@@ -82,19 +88,19 @@ class _LoginScreenState extends State<LoginScreen> {
                     alignment: Alignment.topRight,
                     child: TextButton.icon(
                       icon: const Icon(Icons.language),
-                      label: Text(lang.isEnglish ? 'BM' : 'EN'),
+                      label: Text(lang ? 'BM' : 'EN'),
                       onPressed: () {
-                        lang.toggleLanguage();
+                        languageProvider.toggleLanguage();
                       },
                     ),
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    AppText.welcome(lang.isEnglish),
+                    AppText.welcome(lang),
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   Text(
-                    AppText.subtitle(lang.isEnglish),
+                    AppText.subtitle(lang),
                     style: TextStyle(fontSize: 16, color: Colors.grey),
                   ),
                   const SizedBox(height: 30),
@@ -103,7 +109,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   TextField(
                     controller: auth.loginEmail,
                     decoration: InputDecoration(
-                      labelText: AppText.email(lang.isEnglish),
+                      labelText: AppText.email(lang),
                       labelStyle: const TextStyle(color: Colors.grey),
                       prefixIcon: const Icon(Icons.email),
                       border: OutlineInputBorder(
@@ -116,7 +122,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     controller: auth.loginPassword,
                     obscureText: !_isPasswordVisible,
                     decoration: InputDecoration(
-                      labelText: AppText.password(lang.isEnglish),
+                      labelText: AppText.password(lang),
                       labelStyle: const TextStyle(color: Colors.grey),
                       prefixIcon: const Icon(Icons.lock),
                       suffixIcon: IconButton(
@@ -149,7 +155,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               auth.notifyListeners();
                             },
                           ),
-                          Text(AppText.rememberMe(lang.isEnglish)),
+                          Text(AppText.rememberMe(lang)),
                         ],
                       ),
                     ],
@@ -160,18 +166,18 @@ class _LoginScreenState extends State<LoginScreen> {
                   AnimatedButton(
                     width: 250,
                     onPressed: () async {
-                      final success = await context.read<AuthController>().login();
+                      final result = await context.read<AuthController>().login();
 
-                      if (success) {
+                      if (result['success']) {
                         auth.clearAll();
                         Navigator.pushReplacement(context,
                             MaterialPageRoute(builder: (_) => const MainScreen()));
                       } else {
-                        CustomSnackbar.show(context, "Wrong email or password", Colors.redAccent, Colors.white);
+                        CustomSnackbar.show(context, result['message'], Colors.redAccent, Colors.white);
                       }
                     },
                     child: Text(
-                      AppText.login(lang.isEnglish),
+                      AppText.login(lang),
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -187,8 +193,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(AppText.noAccount(lang.isEnglish)),
-                      TransitionButton(page: const RegistrationScreen(), text: AppText.signUp(lang.isEnglish)),
+                      Text(AppText.noAccount(lang)),
+                      TransitionButton(page: const RegistrationScreen(), text: AppText.signUp(lang)),
                     ],
                   ),
 
@@ -197,7 +203,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: () {
                       TransitionButton.navigateWithSlide(context, const ForgotPassword());
                     },
-                    child: Text(AppText.forgotPassword(lang.isEnglish)),
+                    child: Text(AppText.forgotPassword(lang)),
                   ),
                 ],
               ),

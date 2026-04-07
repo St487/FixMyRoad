@@ -1,3 +1,5 @@
+// ignore_for_file: unnecessary_to_list_in_spreads, deprecated_member_use
+
 import 'package:fix_my_road/features/home/screens/issue_detail.dart';
 import 'package:fix_my_road/provider/language_provider.dart';
 import 'package:fix_my_road/utils/app_text.dart';
@@ -115,7 +117,7 @@ class _BeautifulIssueCard extends StatelessWidget {
   final dynamic issue;
   final bool isInProgress;
 
-  _BeautifulIssueCard({required this.issue, required this.isInProgress});
+  const _BeautifulIssueCard({required this.issue, required this.isInProgress});
 
   @override
   Widget build(BuildContext context) {
@@ -165,7 +167,7 @@ class _BeautifulIssueCard extends StatelessWidget {
                         "${MyConfig.myurl}/${issue['icon']}",
                         fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) =>
-                            Image.asset("assets/default_icon.png", fit: BoxFit.cover),
+                            Image.asset("assets/default_icon.jpg", fit: BoxFit.cover),
                       ),
                     ),
                   ),

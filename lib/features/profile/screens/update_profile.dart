@@ -1,7 +1,9 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:io';
 
 import 'package:fix_my_road/features/auth/service/location_service.dart';
-import 'package:fix_my_road/features/profile/controllers/get_profile.dart';
+import 'package:fix_my_road/features/profile/controllers/profileController.dart';
 import 'package:fix_my_road/provider/language_provider.dart';
 import 'package:fix_my_road/shared/support_widget/snack_bar.dart';
 import 'package:fix_my_road/utils/app_text.dart';
@@ -31,25 +33,26 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
   final phoneController = TextEditingController();
   final addressController = TextEditingController();
   final postalController = TextEditingController();
+  final Color secondaryPurple = const Color(0xFF9575CD);
+  final Color kBackground = const Color(0xFFF8F9FE);
 
 @override
 void initState() {
   super.initState();
-  WidgetsBinding.instance.addPostFrameCallback((_) async {
-    await _loadStates();          
-    await _loadProfileDefaults(); 
-  });
-  final auth = context.read<ProfileController>();
 
-    if (!mounted) return;
+  WidgetsBinding.instance.addPostFrameCallback((_) async {
+    final auth = context.read<ProfileController>();
 
     firstNameController.text = auth.firstName;
     lastNameController.text = auth.lastName;
     phoneController.text = auth.phone ?? "";
     addressController.text = auth.address ?? "";
     postalController.text = auth.postalCode ?? "";
-}
 
+    await _loadStates();
+    await _loadProfileDefaults();
+  });
+}
 Future<List<Map<String, dynamic>>> _loadStates() async {
   final data = await LocationService.fetchStates();
   if (!mounted) return data;
@@ -102,26 +105,28 @@ Future<void> _loadProfileDefaults() async {
 
   @override
   Widget build(BuildContext context) {
-    final lang = context.watch<LanguageProvider>();
+    final languageProvider = context.watch<LanguageProvider>();
+    final lang = languageProvider.isEnglish;
     final auth = context.watch<ProfileController>();
-    const kBackground = Color.fromARGB(255, 247, 235, 255);
-    const kGradientStart = Color.fromARGB(255, 251, 195, 226);
 
     return Scaffold(
       backgroundColor: kBackground,
       appBar: AppBar(
+        elevation: 0,
+        centerTitle: true,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(AppText.editProfile(lang.isEnglish), style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-        centerTitle: true,
-        elevation: 0,
-        backgroundColor: kGradientStart,
+        title: Text(
+          AppText.editProfile(lang),
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: primaryPurple,
         flexibleSpace: Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [kGradientStart, kBackground],
+              colors: [primaryPurple, secondaryPurple],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -129,219 +134,266 @@ Future<void> _loadProfileDefaults() async {
         ),
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(20),
         child: Column(
           children: [
-            // Profile Image Section
-            Center(
-              child: Stack(
+            Stack(
+              alignment: Alignment.center,
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  height: 170,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [secondaryPurple, kBackground],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                  ),
+                ),
+                _buildProfileImage(auth, lang),
+              ],
+            ),
+
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
                 children: [
+                  const SizedBox(height: 10),
+                  Text(
+                    auth.email,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 25),
+
+                  // Form Card
                   Container(
+                    padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.black, width: 3),
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.04),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
                     ),
-                    child: CircleAvatar(
-                      radius: 60,
-                      backgroundImage: auth.profilePicture != null
-                            ? NetworkImage("${MyConfig.myurl}/${auth.profilePicture}")
-                            : const AssetImage("assets/images/personIcon.jpg") as ImageProvider,
+                    child: Column(
+                      children: [
+                        _buildTextField(AppText.firstName(lang), firstNameController, Icons.person_outline),
+                        _buildTextField(AppText.lastName(lang), lastNameController, Icons.person_outline),
+                        _buildTextField(AppText.phoneNumber(lang), phoneController, Icons.phone_android_outlined),
+                        _buildTextField(AppText.address(lang), addressController, Icons.location_on_outlined),
+                        _buildTextField(AppText.postalCode(lang), postalController, Icons.markunread_mailbox_outlined),
+                        
+                        const SizedBox(height: 10),
+                        _buildDropdownSection(lang, auth),
+                      ],
                     ),
                   ),
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: CircleAvatar(
-                      backgroundColor: primaryPurple,
-                      radius: 18,
-                      child: IconButton(
-                        icon: Icon(Icons.camera_alt, size: 18, color: Colors.white),
-                        onPressed: () {
-                          _showImageSourceDialog();
-                        },
-                      ),
-                    ),
-                  ),
+
+                  const SizedBox(height: 30),
+                  _buildSaveButton(auth, lang),
+                  const SizedBox(height: 40),
                 ],
               ),
             ),
-            SizedBox(height: 30),
-            Text(auth.email, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            SizedBox(height: 30),
-            Divider(color: Colors.grey[300], thickness: 1),
-            // Form Fields
-            _buildTextField(AppText.firstName(lang.isEnglish), firstNameController),
-            _buildTextField(AppText.lastName(lang.isEnglish), lastNameController),
-            _buildTextField(AppText.phoneNumber(lang.isEnglish), phoneController),
-            _buildTextField(AppText.address(lang.isEnglish), addressController),
-            _buildTextField(AppText.postalCode(lang.isEnglish), postalController),
-
-            // State Dropdown
-            _buildLabel(AppText.state(lang.isEnglish)),
-            DropdownButtonFormField<String>(
-              value: states.any((s) =>
-                  s['name'].toString().toLowerCase() ==
-                  auth.state.toString().toLowerCase())
-              ? states.firstWhere((s) =>
-                      s['name'].toString().toLowerCase() ==
-                      auth.state.toString().toLowerCase())['name']
-              : null,
-              decoration: _inputDecoration(),
-              hint: Text(isLoadingStates ? "Loading States..." : "Select State"),
-              items: states.map((state) {
-                return DropdownMenuItem(
-                  value: state['name'].toString(),
-                  child: Text(state['name']),
-                );
-              }).toList(),
-              onChanged: (stateName) async {
-                if (stateName == null) return;
-
-                if (!mounted) return;
-
-                setState(() {
-                  auth.state = stateName;
-                  selectedCity = null;
-                });
-
-                final selectedState = states.firstWhere(
-                  (s) => s["name"] == stateName,
-                  orElse: () => {},
-                );
-
-                final iso = selectedState.isNotEmpty ? selectedState["iso2"] : null;
-
-                if (iso != null) {
-                  final cityData = await LocationService.fetchCities(iso);
-                  if (!mounted) return;
-                  setState(() {
-                    cities = cityData;
-                  });
-                }
-              },
-            ),
-            SizedBox(height: 5),
-
-            // City Dropdown
-            _buildLabel(AppText.city(lang.isEnglish)),
-            DropdownButtonFormField<String>(
-              value: cities.any((c) => c['name'] == selectedCity)
-                        ? selectedCity
-                        : null,
-              decoration: _inputDecoration(),
-              hint: Text(isLoadingCities ? "Loading Cities..." : "Select City"),
-              items: cities.map((city) {
-                return DropdownMenuItem(
-                  value: city['name'].toString(),
-                  child: Text(city['name']),
-                );
-              }).toList(),
-              onChanged: (val) => setState(() => selectedCity = val),
-            ),
-
-            SizedBox(height: 40),
-
-            // Save Button
-            SizedBox(
-              width: double.infinity,
-              height: 55,
-              child: ElevatedButton(
-                onPressed: () async {
-                  final auth = context.read<ProfileController>();
-
-                  final result = await auth.updateProfile(
-                    firstName: firstNameController.text,
-                    lastName: lastNameController.text,
-                    email: auth.email,
-                    phone: phoneController.text,
-                    address: addressController.text,
-                    postalCode: postalController.text,
-                    state: (auth.state == null || auth.state!.isEmpty)
-                        ? null
-                        : auth.state,
-
-                    city: (selectedCity == null || selectedCity!.isEmpty)
-                        ? null
-                        : selectedCity,
-                  );
-
-                  if (result['status'] == 'success') {
-                    CustomSnackbar.show(
-                      context,
-                      result['message'],
-                      Colors.white,
-                      Colors.greenAccent,
-                    );
-                  } else {
-                    CustomSnackbar.show(
-                      context,
-                      result['message'],
-                      Colors.white,
-                      Colors.redAccent,
-                    );
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                backgroundColor: primaryPurple,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 4,
-                ).copyWith(
-                  overlayColor: MaterialStateProperty.resolveWith<Color?>(
-                    (states) {
-                      if (states.contains(MaterialState.pressed)) {
-                        return Colors.white.withOpacity(0.2); // splash effect
-                      }
-                      return null;
-                    },
-                  ),
-                ),
-                child: Text(AppText.save(lang.isEnglish), style: TextStyle(fontSize: 16, color: Colors.white)),
-              ),
-            ),
-            SizedBox(height: 20),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildLabel(String label) {
-    return Container(
-      alignment: Alignment.centerLeft,
-      padding: EdgeInsets.only(bottom: 8, top: 15),
-      child: Text(label, style: TextStyle(fontWeight: FontWeight.w600, color: Colors.grey[700])),
+  Widget _buildProfileImage(ProfileController auth, bool lang) {
+    return Stack(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(4),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+            boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 15)],
+          ),
+          child: CircleAvatar(
+            radius: 60,
+            backgroundColor: Colors.grey[200],
+            backgroundImage: auth.profilePicture != null
+                ? NetworkImage("${MyConfig.myurl}/${auth.profilePicture}")
+                : const AssetImage("assets/images/personIcon.jpg") as ImageProvider,
+          ),
+        ),
+        Positioned(
+          bottom: 5,
+          right: 5,
+          child: GestureDetector(
+            onTap: () => _showImageSourceDialog(lang),
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: primaryPurple,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2),
+              ),
+              child: const Icon(Icons.camera_alt, size: 20, color: Colors.white),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, {bool enabled = true}) {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      _buildLabel(label),
-      TextField(
-        controller: controller,
-        enabled: enabled,
-        decoration: _inputDecoration(isEnabled: enabled),
+  Widget _buildTextField(String label, TextEditingController controller, IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey[700])),
+          const SizedBox(height: 8),
+          TextField(
+            controller: controller,
+            decoration: _inputDecoration(icon: icon),
+          ),
+        ],
       ),
-    ],
-  );
-}
-
-  InputDecoration _inputDecoration({String? hint, bool isEnabled = true}) {
-    return InputDecoration(
-      hintText: hint,
-      filled: !isEnabled,
-      fillColor: isEnabled ? Colors.transparent : Colors.grey[100],
-      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey[400]!)),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey[400]!)),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: primaryPurple, width: 2)),
     );
   }
 
-  Future<void> pickImage(ImageSource source) async {
+  Widget _buildDropdownSection(bool lang, ProfileController auth) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(AppText.state(lang), style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey[700])),
+        const SizedBox(height: 8),
+        DropdownButtonFormField<String>(
+          value: states.any((s) => s['name'].toString().toLowerCase() == auth.state.toString().toLowerCase())
+              ? states.firstWhere((s) => s['name'].toString().toLowerCase() == auth.state.toString().toLowerCase())['name']
+              : null,
+          decoration: _inputDecoration(icon: Icons.map_outlined),
+          hint: Text(isLoadingStates ? "Loading..." : AppText.inputState(lang)),
+          items: states.map((state) => DropdownMenuItem(value: state['name'].toString(), child: Text(state['name']))).toList(),
+          onChanged: (stateName) async {
+            if (stateName == null) return;
+            setState(() { auth.state = stateName; selectedCity = null; });
+            final selectedState = states.firstWhere((s) => s["name"] == stateName, orElse: () => {});
+            final iso = selectedState.isNotEmpty ? selectedState["iso2"] : null;
+            if (iso != null) {
+              final cityData = await LocationService.fetchCities(iso);
+              if (!mounted) return;
+              setState(() => cities = cityData);
+            }
+          },
+        ),
+        const SizedBox(height: 20),
+        Text(AppText.city(lang), style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey[700])),
+        const SizedBox(height: 8),
+        DropdownButtonFormField<String>(
+          value: cities.any((c) => c['name'] == selectedCity) ? selectedCity : null,
+          decoration: _inputDecoration(icon: Icons.location_city_outlined),
+          hint: Text(isLoadingCities ? "Loading..." : AppText.inputCity(lang)),
+          items: cities.map((city) => DropdownMenuItem(value: city['name'].toString(), child: Text(city['name']))).toList(),
+          onChanged: (val) => setState(() => selectedCity = val),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSaveButton(ProfileController auth, bool lang) {
+    return Container(
+      width: double.infinity,
+      height: 55,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(colors: [primaryPurple, secondaryPurple]),
+        boxShadow: [
+          BoxShadow(
+            color: primaryPurple.withOpacity(0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: ElevatedButton(
+        onPressed: () async {
+          final auth = context.read<ProfileController>();
+
+          final result = await auth.updateProfile(
+            firstName: firstNameController.text,
+            lastName: lastNameController.text,
+            email: auth.email,
+            phone: phoneController.text,
+            address: addressController.text,
+            postalCode: postalController.text,
+            state: (auth.state == null || auth.state!.isEmpty)
+                ? null
+                : auth.state,
+
+            city: (selectedCity == null || selectedCity!.isEmpty)
+                ? null
+                : selectedCity,
+          );
+
+          if (result['status'] == 'success') {
+            CustomSnackbar.show(
+              context,
+              result['message'],
+              Colors.greenAccent,
+              Colors.white,
+            );
+          } else {
+            CustomSnackbar.show(
+              context,
+              result['message'],
+              Colors.redAccent,
+              Colors.white,
+            );
+          }
+        },
+        style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.transparent,
+        shadowColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        elevation: 4,
+        ).copyWith(
+          overlayColor: MaterialStateProperty.resolveWith<Color?>(
+            (states) {
+              if (states.contains(MaterialState.pressed)) {
+                return Colors.white.withOpacity(0.2); // splash effect
+              }
+              return null;
+            },
+          ),
+        ),
+        child: Text(AppText.save(lang), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+      ),
+    );
+  }
+
+  InputDecoration _inputDecoration({required IconData icon}) {
+    return InputDecoration(
+      prefixIcon: Icon(icon, size: 20, color: secondaryPurple),
+      filled: true,
+      fillColor: Colors.grey[50],
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Colors.grey[200]!),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: primaryPurple, width: 1.5),
+      ),
+    );
+  }
+
+  Future<void> pickImage(ImageSource source, bool lang) async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: source);
 
@@ -378,16 +430,16 @@ Future<void> _loadProfileDefaults() async {
         if (result['status'] == 'success') {
           await controller.getProfile(); 
           if (!mounted) return;
-          CustomSnackbar.show(context, result['message'],Colors.white, Colors.greenAccent);
+          CustomSnackbar.show(context, result['message'],Colors.greenAccent, Colors.white);
         } else {
           if (!mounted) return;
-          CustomSnackbar.show(context, result['message'] ?? "Upload failed", Colors.white, Colors.red);
+          CustomSnackbar.show(context, result['message'] ?? AppText.uploadFailed(lang), Colors.red, Colors.white);
         }
       }
     }
   }
 
-  void _showImageSourceDialog() {
+  void _showImageSourceDialog(bool lang) {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -395,27 +447,27 @@ Future<void> _loadProfileDefaults() async {
       builder: (context) => Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Padding(
+          Padding(
             padding: EdgeInsets.all(20),
             child: Text(
-              "Choose Image Source",
+              AppText.chooseImageSource(lang),
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ),
           ListTile(
-            leading: const Icon(Icons.photo_library),
-            title: const Text("Gallery"),
+            leading: const Icon(Icons.camera_alt),
+            title: Text(AppText.takePhoto(lang)),
             onTap: () {
               Navigator.pop(context);
-              pickImage(ImageSource.gallery);
+              pickImage(ImageSource.camera, lang);
             },
           ),
           ListTile(
-            leading: const Icon(Icons.camera_alt),
-            title: const Text("Camera"),
+            leading: const Icon(Icons.photo_library),
+            title: Text(AppText.chooseGallery(lang)),
             onTap: () {
               Navigator.pop(context);
-              pickImage(ImageSource.camera);
+              pickImage(ImageSource.gallery, lang);
             },
           ),
           const SizedBox(height: 20),

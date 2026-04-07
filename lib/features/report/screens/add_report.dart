@@ -1,5 +1,5 @@
 import 'package:fix_my_road/features/map/screens/map_picker_page.dart';
-import 'package:fix_my_road/features/report/controllers/report.dart';
+import 'package:fix_my_road/features/report/controllers/reportController.dart';
 import 'package:fix_my_road/provider/language_provider.dart';
 import 'package:fix_my_road/shared/support_widget/snack_bar.dart';
 import 'package:fix_my_road/utils/app_text.dart';
@@ -18,43 +18,31 @@ class AddReport extends StatefulWidget {
 }
 
 class _AddReportState extends State<AddReport> {
-  @override
-  void dispose() {
-    _mapController?.dispose(); 
-    super.dispose();
-  }
-
   GoogleMapController? _mapController;
-  
-  // final List<String> issueTypes = AppText.getList(lang.isEnglish);
   String? selectedType;
   final ImagePicker _picker = ImagePicker();
 
+  @override
+  void dispose() {
+    _mapController?.dispose();
+    super.dispose();
+  }
+
+  // LOGIC PRESERVED: Camera/Gallery Picking
   Future<void> _pickFromCamera() async {
     final report = context.read<ReportController>();
     if (report.selectedImages.length >= 3) return;
-
-    final XFile? image = await _picker.pickImage(
-      source: ImageSource.camera,
-      imageQuality: 70,
-    );
-
+    final XFile? image = await _picker.pickImage(source: ImageSource.camera, imageQuality: 70);
     if (image != null) {
-      setState(() {
-        report.selectedImages.add(File(image.path));
-      });
+      setState(() => report.selectedImages.add(File(image.path)));
     }
   }
 
-  Future<void> _pickFromGallery() async {
+  Future<void> _pickFromGallery(bool lang) async {
     final report = context.read<ReportController>();
     int remainingSlots = 3 - report.selectedImages.length;
     if (remainingSlots <= 0) return;
-
-    final List<XFile> images = await _picker.pickMultiImage(
-      imageQuality: 70,
-    );
-
+    final List<XFile> images = await _picker.pickMultiImage(imageQuality: 70);
     if (images.isNotEmpty) {
       setState(() {
         final List<XFile> selectedLimit = images.take(remainingSlots).toList();
@@ -62,29 +50,42 @@ class _AddReportState extends State<AddReport> {
           report.selectedImages.add(File(image.path));
         }
       });
-
       if (images.length > remainingSlots) {
-
-        CustomSnackbar.show(
-          context,
-          "Only $remainingSlots images were added (Max 3 allowed)",
-          Colors.white,         // Text color
-          Colors.black,   // Background color
-        );
+        CustomSnackbar.show(context, AppText.maxImagesWarning(lang, remainingSlots), Colors.redAccent, Colors.white);
       }
     }
   }
 
-  Map<String, String> issueTypeMapping = {
-    "Banjir": "Drainage",
-    "Lain-lain": "Other",
-    "Lubang Jalan": "Pothole",
-    "Kemudahan Pengangkutan Awam": "Public Transport Facilities",
-    "Tanda Jalan": "Road Sign",
-    "Keselamatan tepi jalan": "Roadside Safety",
-    "Lampu Jalan": "Street Light",
-    "Lampu Isyarat": "Traffic Light",
-  };
+  // Reusable Section Header
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, bottom: 8),
+      child: Text(
+        title.toUpperCase(),
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+          color: Colors.deepPurple.withOpacity(0.7),
+          letterSpacing: 1.1,
+        ),
+      ),
+    );
+  }
+
+  // Custom Input Decoration
+  InputDecoration _inputStyle(String hint, {Widget? suffixIcon}) {
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+      filled: true,
+      fillColor: Colors.grey.shade50,
+      suffixIcon: suffixIcon,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.deepPurple, width: 1)),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -93,441 +94,229 @@ class _AddReportState extends State<AddReport> {
     final lang = languageProvider.isEnglish;
     final List<String> issueTypes = AppText.getList(lang);
 
-    const kBackground = Color.fromARGB(255, 247, 235, 255);
-    const kGradientStart = Color.fromARGB(255, 251, 195, 226);
+    const kBackground = Color(0xFFF8F9FD); // Clean off-white
+    const kPrimary = Colors.deepPurple;
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      report.setLanguage(lang); 
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => report.setLanguage(lang));
 
     return WillPopScope(
-        onWillPop: () async {
+      onWillPop: () async {
         report.clearForm();
         return true;
       },
       child: Scaffold(
         backgroundColor: kBackground,
         appBar: AppBar(
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: Colors.black),
-        onPressed: () {
-          context.read<ReportController>().clearForm();
-          Navigator.pop(context);
-        },
-      ),
-      title: Text(
-        AppText.addReport(lang),
-        style: const TextStyle(
-          color: Colors.black,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      centerTitle: true,
-      elevation: 0,
-      backgroundColor: kGradientStart,
-      flexibleSpace: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [kGradientStart, kBackground],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-      ),
-    ),
-        body: Center(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 50),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.only(left: 10),
-                    child: Text(AppText.reportType(lang),
-                      style: TextStyle(
-                        fontSize: 16, 
-                        fontWeight: FontWeight.w500
-                      )
-                    )
-                  ),
-                  const SizedBox(height: 5),
-                  DropdownButtonFormField<String>(
-                    value: selectedType,
-                    isExpanded: true,
-                    elevation: 4,
-                    dropdownColor: Colors.white,
-                    icon: const Icon(Icons.keyboard_arrow_down),
-                    iconSize: 28,
-                    style: const TextStyle(fontSize: 16, color: Colors.black87),
-                    items: issueTypes.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
-                    onChanged: (v) {
-                      setState(() {
-                        selectedType = v; 
-                        if (lang) {
-                          report.selectedType = v;
-                        } else {
-                          // Map Malay to English
-                          report.selectedType = report.malayToEnglish[v!] ?? v;
-                        }
-                      });
-                    },
-                    decoration: InputDecoration(
-                      hintText: AppText.selectType(lang),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                      fillColor: Colors.white,
-                      filled: true,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-      
-                  // Title
-                  Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.only(left: 10),
-                    child: Text(AppText.title(lang),
-                      style: TextStyle(
-                        fontSize: 16, 
-                        fontWeight: FontWeight.w500
-                      )
-                    )
-                  ),
-                  const SizedBox(height: 5),
-                  TextField(
-                    controller: report.titleController,
-                    decoration: InputDecoration(
-                      hintText: AppText.inputTitle(lang),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                      fillColor: Colors.white,
-                      filled: true,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-      
-                  // Description
-                  Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.only(left: 10),
-                    child: Text(AppText.description(lang),
-                      style: TextStyle(
-                        fontSize: 16, 
-                        fontWeight: FontWeight.w500
-                      )
-                    )
-                  ),
-                  const SizedBox(height: 5),
-                  TextField(
-                    maxLines: 4,
-                    controller: report.descriptionController,
-                    decoration: InputDecoration(
-                      hintText: AppText.inputDescription(lang),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                      fillColor: Colors.white,
-                      filled: true,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-      
-                  // Location Picker
-                  Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.only(left: 10),
-                    child: Text(AppText.location(lang),
-                      style: TextStyle(
-                        fontSize: 16, 
-                        fontWeight: FontWeight.w500
-                      )
-                    )
-                  ),
-                  const SizedBox(height: 5),
-                  TextField(
-        readOnly: true,
-        controller: TextEditingController(text: report.pickedAddress ?? ''),
-        decoration: InputDecoration(
-      hintText: AppText.selectLocation(lang),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      fillColor: Colors.white,
-      filled: true,
-      suffixIcon: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (report.pickedLocation != null)
-            IconButton(
-              icon: const Icon(Icons.clear),
-              onPressed: () {
-                setState(() {
-                  report.pickedLocation = null;
-                  report.pickedAddress = null;
-                });
-              },
-            ),
-          IconButton(
-            icon: const Icon(Icons.location_searching_outlined),
-            onPressed: () async {
-              final result = await Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const MapPickerPage()),
-              );
-      
-              if (result != null && result is Map) {
-                setState(() {
-                  report.pickedLocation = result["position"] as LatLng;
-                  report.pickedAddress = result["address"] as String;
-                });
-              }
+          elevation: 0,
+          backgroundColor: Colors.white,
+          centerTitle: true,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black, size: 20),
+            onPressed: () {
+              report.clearForm();
+              Navigator.pop(context);
             },
           ),
-        ],
-      ),
+          title: Text(
+            AppText.addReport(lang),
+            style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w800, fontSize: 18),
+          ),
         ),
-      ),
-                  const SizedBox(height: 10),
-      
-                  // Small Map Preview (only visible if user picked location)
-                  // Small Map Preview
-                if (report.pickedLocation != null)
-                  Container(
-                    height: 180,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(15),
-                      border: Border.all(color: Colors.black),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(15),
-                      child: GoogleMap(
-                        initialCameraPosition: CameraPosition(
-                          target: report.pickedLocation!,
-                          zoom: 15,
-                        ),
-                        onMapCreated: (controller) => _mapController = controller,
-                        zoomControlsEnabled: false,
-                        mapToolbarEnabled: false,
-                        markers: {
-                          Marker(
-                            markerId: const MarkerId("report_location"),
-                            position: report.pickedLocation!,
-                          ),
+        body: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // INFO CARD
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 5))],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildSectionHeader(AppText.reportType(lang)),
+                      DropdownButtonFormField<String>(
+                        value: selectedType,
+                        isExpanded: true,
+                        dropdownColor: Colors.white,
+                        icon: const Icon(Icons.unfold_more_rounded, color: Colors.grey),
+                        style: const TextStyle(fontSize: 15, color: Colors.black),
+                        items: issueTypes.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
+                        onChanged: (v) {
+                          setState(() {
+                            selectedType = v;
+                            report.selectedType = lang ? v : (report.malayToEnglish[v!] ?? v);
+                          });
                         },
+                        decoration: _inputStyle(AppText.selectType(lang)),
                       ),
-                    ),
+                      const SizedBox(height: 20),
+                      _buildSectionHeader(AppText.title(lang)),
+                      TextField(
+                        controller: report.titleController,
+                        decoration: _inputStyle(AppText.inputTitle(lang)),
+                      ),
+                      const SizedBox(height: 20),
+                      _buildSectionHeader(AppText.description(lang)),
+                      TextField(
+                        maxLines: 3,
+                        controller: report.descriptionController,
+                        decoration: _inputStyle(AppText.inputDescription(lang)),
+                      ),
+                    ],
                   ),
-      
-                  const SizedBox(height: 20),
-      
-                  Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.only(left: 10),
-                    child: Text(AppText.photos(lang), 
-                      style: TextStyle(
-                        fontSize: 16, 
-                        fontWeight: FontWeight.w500
-                      )
-                    )
+                ),
+                const SizedBox(height: 20),
+
+                // LOCATION CARD
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 5))],
                   ),
-                  const SizedBox(height: 5),
-                  GestureDetector(
-                    onTap: () {
-                      if (report.selectedImages.length >= 3) {
-                        CustomSnackbar.show(
-                          context,
-                          "Maximum of 3 images allowed.",
-                          Colors.white,         // Text color
-                          Colors.black,   // Background color
-                        );
-                      }
-                      showModalBottomSheet(
-                        context: context,
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                        ),
-                        builder: (_) => Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Column(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildSectionHeader(AppText.location(lang)),
+                      TextField(
+                        readOnly: true,
+                        controller: TextEditingController(text: report.pickedAddress ?? ''),
+                        decoration: _inputStyle(
+                          AppText.selectLocation(lang),
+                          suffixIcon: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              ListTile(
-                                leading: const Icon(Icons.camera_alt),
-                                title: const Text("Take Photo"),
-                                onTap: () {
-                                  Navigator.pop(context);
-                                  _pickFromCamera();
-                                },
-                              ),
-                              ListTile(
-                                leading: const Icon(Icons.photo_library),
-                                title: const Text("Choose from Gallery"),
-                                onTap: () {
-                                  Navigator.pop(context);
-                                  _pickFromGallery();
+                              if (report.pickedLocation != null)
+                                IconButton(icon: const Icon(Icons.cancel, color: Colors.grey), onPressed: () => setState(() { report.pickedLocation = null; report.pickedAddress = null; })),
+                              IconButton(
+                                icon: const Icon(Icons.map_rounded, color: kPrimary),
+                                onPressed: () async {
+                                  final result = await Navigator.push(context, MaterialPageRoute(builder: (_) => const MapPickerPage()));
+                                  if (result != null && result is Map) {
+                                    setState(() {
+                                      report.pickedLocation = result["position"] as LatLng;
+                                      report.pickedAddress = result["address"] as String;
+                                    });
+                                  }
                                 },
                               ),
                             ],
                           ),
                         ),
-                      );
-                    },
-                    child: Container(
-                      height: 150,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(15),
-                        border: Border.all(color: Colors.black),
-                        color: Colors.white,
                       ),
-                      child: report.selectedImages.isEmpty
-                        ? Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Icon(Icons.add_a_photo, size: 40, color: Colors.grey),
-                            SizedBox(height: 8),
-                            Text("Add Photos (max 3)", style: TextStyle(color: Colors.grey)),
-                          ],
-                        )
-                        : ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: report.selectedImages.length < 3 ? report.selectedImages.length + 1 : report.selectedImages.length,
-                          itemBuilder: (context, index) {
-                            if (index == report.selectedImages.length) {
-                              return GestureDetector(
-                                onTap: _showPickerOptions,
-                                child: Container(
-                                  width: 100,
-                                  margin: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey.shade200,
-                                    borderRadius: BorderRadius.circular(15),
-                                    border: Border.all(color: Colors.grey.shade400, style: BorderStyle.solid),
-                                  ),
-                                  child: const Icon(Icons.add_a_photo, color: Colors.grey),
-                                ),
-                              );
-                            }
-                            return Stack(
-                              children: [
-                                Container(
-                                  margin: const EdgeInsets.all(8),
-                                  width: 120,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(15),
-                                    image: DecorationImage(
-                                      image: FileImage(report.selectedImages[index]),
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                ),
-                                Positioned(
-                                  top: 2,
-                                  right: 2,
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      setState(() {
-                                        report.selectedImages.removeAt(index);
-                                      });
-                                    },
-                                    child: const CircleAvatar(
-                                      radius: 12,
-                                      backgroundColor: Colors.black54,
-                                      child: Icon(Icons.close, size: 16, color: Colors.white),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            );
-                          },
-                        ),
-                    ),
-                  ),  
-                  const SizedBox(height: 40),
-      
-                  // Submit Button
-                  SizedBox(
-                    width: double.infinity,
-                    height: 45,
-                      child: ElevatedButton(
-                        onPressed: () async {
-                        final error = report.validateFields();
-                        if (error != null) {
-                          CustomSnackbar.show(
-                            context,
-                            error,
-                            Colors.white,         // Text color
-                            Colors.redAccent,   // Background color
-                          );
-                          return;
-                        }
-      
-                        try {
-                          final userId = await _getUserId();
-                          if (userId == null) {
-                            CustomSnackbar.show(
-                              context,
-                              "Something went wrong. Please log in again.",
-                              Colors.white,         // Text color
-                              Colors.redAccent,   // Background color
-                            );
-                            return;
-                          }
-      
-                          bool success = await report.submitReport(userId);
-                          if (success) {
-                            CustomSnackbar.show(
-                              context,
-                              "Report submitted successfully!",
-                              Colors.white,         // Text color
-                              Colors.greenAccent,   // Background color
-                            );
-      
-                            report.clearForm();
-      
-                            setState(() {
-                              selectedType = null;
-                            });
-                            Navigator.pop(context);
-                          }
-                        } catch (e) {
-                          CustomSnackbar.show(
-                              context,
-                              e.toString(),
-                              Colors.white,         // Text color
-                              Colors.redAccent,   // Background color
-                            );
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.deepPurple,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 4,
-                      ).copyWith(
-                        overlayColor: MaterialStateProperty.resolveWith<Color?>(
-                          (states) {
-                            if (states.contains(MaterialState.pressed)) {
-                              return Colors.white.withOpacity(0.2); // splash effect
-                            }
-                            return null;
-                          },
-                        ),
-                      ),
-                        child: Text(
-                          AppText.submitReport(lang),
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            letterSpacing: 1.2,
+                      if (report.pickedLocation != null) ...[
+                        const SizedBox(height: 15),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: SizedBox(
+                            height: 150,
+                            child: GoogleMap(
+                              initialCameraPosition: CameraPosition(target: report.pickedLocation!, zoom: 15),
+                              onMapCreated: (controller) => _mapController = controller,
+                              zoomControlsEnabled: false,
+                              markers: {Marker(markerId: const MarkerId("loc"), position: report.pickedLocation!)},
+                            ),
                           ),
                         ),
-                      ),
+                      ],
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // PHOTOS SECTION
+                _buildSectionHeader("${AppText.photos(lang)} (${report.selectedImages.length}/3)"),
+                SizedBox(
+                  height: 110,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: report.selectedImages.length + (report.selectedImages.length < 3 ? 1 : 0),
+                    itemBuilder: (context, index) {
+                      if (index == report.selectedImages.length) {
+                        return GestureDetector(
+                          onTap: () => _showPickerOptions(lang),
+                          child: Container(
+                            width: 100,
+                            margin: const EdgeInsets.only(right: 12),
+                            decoration: BoxDecoration(
+                              color: Colors.deepPurple.withOpacity(0.05),
+                              borderRadius: BorderRadius.circular(15),
+                              border: Border.all(color: Colors.deepPurple.withOpacity(0.2), style: BorderStyle.solid),
+                            ),
+                            child: const Icon(Icons.add_a_photo_outlined, color: Colors.deepPurple),
+                          ),
+                        );
+                      }
+                      return Stack(
+                        children: [
+                          Container(
+                            width: 100,
+                            margin: const EdgeInsets.only(right: 12),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(15),
+                              image: DecorationImage(image: FileImage(report.selectedImages[index]), fit: BoxFit.cover),
+                            ),
+                          ),
+                          Positioned(
+                            top: 5,
+                            right: 17,
+                            child: GestureDetector(
+                              onTap: () => setState(() => report.selectedImages.removeAt(index)),
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
+                                child: const Icon(Icons.close, size: 14, color: Colors.white),
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 40),
+
+                // SUBMIT BUTTON
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      final error = report.validateFields();
+                      if (error != null) {
+                        CustomSnackbar.show(context, error, Colors.redAccent, Colors.white);
+                        return;
+                      }
+                      final userId = await _getUserId();
+                      if (userId == null) return;
+                      bool success = await report.submitReport(userId);
+                      if (success) {
+                        CustomSnackbar.show(context, AppText.submitReportSuccess(lang), Colors.green, Colors.white);
+                        report.clearForm();
+                        setState(() => selectedType = null);
+                        Navigator.pop(context);
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: kPrimary,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      elevation: 2,
                     ),
-                  
-                ],
-              ),
+                    child: Text(
+                      AppText.submitReport(lang),
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -535,43 +324,46 @@ class _AddReportState extends State<AddReport> {
     );
   }
 
-
-  void _showPickerOptions() {
+  void _showPickerOptions(bool lang) {
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (_) => Padding(
-        padding: const EdgeInsets.all(20),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (_) => Container(
+        padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ListTile(
-              leading: const Icon(Icons.camera_alt),
-              title: const Text("Take Photo"),
-              onTap: () {
-                Navigator.pop(context);
-                _pickFromCamera();
-              },
+            const Text("Select Source", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _sourceOption(Icons.camera_alt_rounded, AppText.takePhoto(lang), _pickFromCamera),
+                _sourceOption(Icons.image_rounded, AppText.chooseGallery(lang), () => _pickFromGallery(lang)),
+              ],
             ),
-            ListTile(
-              leading: const Icon(Icons.photo_library),
-              title: const Text("Choose from Gallery"),
-              onTap: () {
-                Navigator.pop(context);
-                _pickFromGallery();
-              },
-            ),
+            const SizedBox(height: 20),
           ],
         ),
       ),
     );
   }
 
-  Future<int?> _getUserId() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getInt('user_id'); // make sure you stored it as int
+  Widget _sourceOption(IconData icon, String label, Function onTap) {
+    return GestureDetector(
+      onTap: () { Navigator.pop(context); onTap(); },
+      child: Column(
+        children: [
+          CircleAvatar(radius: 30, backgroundColor: Colors.deepPurple.withOpacity(0.1), child: Icon(icon, color: Colors.deepPurple)),
+          const SizedBox(height: 8),
+          Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
+        ],
+      ),
+    );
   }
 
+  Future<int?> _getUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt('user_id');
+  }
 }

@@ -1,4 +1,6 @@
-import 'package:fix_my_road/features/auth/controllers/auth_controller.dart';
+// ignore_for_file: use_build_context_synchronously, deprecated_member_use
+
+import 'package:fix_my_road/features/auth/controllers/authController.dart';
 import 'package:fix_my_road/features/auth/service/location_service.dart';
 import 'package:fix_my_road/shared/animation/animated_button.dart';
 import 'package:fix_my_road/provider/language_provider.dart';
@@ -38,7 +40,8 @@ class _CompleteProfileState extends State<CompleteProfile> {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthController>();
     final screenHeight = MediaQuery.of(context).size.height;
-    final lang = context.watch<LanguageProvider>();
+    final languageProvider = context.watch<LanguageProvider>();
+    final lang = languageProvider.isEnglish;
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -100,7 +103,7 @@ class _CompleteProfileState extends State<CompleteProfile> {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Text(
-                            AppText.completeProfile(lang.isEnglish),
+                            AppText.completeProfile(lang),
                             style: TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
@@ -113,7 +116,7 @@ class _CompleteProfileState extends State<CompleteProfile> {
                             width: double.infinity,
                             padding: EdgeInsets.fromLTRB(10, 0, 0, 5),
                             child: Text(
-                              AppText.firstName(lang.isEnglish),
+                              AppText.firstName(lang),
                               style: TextStyle(fontSize: 16),
                               textAlign: TextAlign.left,
                             ),
@@ -121,7 +124,7 @@ class _CompleteProfileState extends State<CompleteProfile> {
                           TextField(
                             controller: auth.firstName,
                             decoration: InputDecoration(
-                              hintText: AppText.inputFirstName(lang.isEnglish),
+                              hintText: AppText.inputFirstName(lang),
                               hintStyle: TextStyle(color: Colors.grey.shade500),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(15),
@@ -136,7 +139,7 @@ class _CompleteProfileState extends State<CompleteProfile> {
                             width: double.infinity,
                             padding: EdgeInsets.fromLTRB(10, 0, 0, 5),
                             child: Text(
-                              AppText.lastName(lang.isEnglish),
+                              AppText.lastName(lang),
                               style: TextStyle(fontSize: 16),
                               textAlign: TextAlign.left,
                             ),
@@ -144,7 +147,7 @@ class _CompleteProfileState extends State<CompleteProfile> {
                           TextField(
                             controller: auth.lastName,
                             decoration: InputDecoration(
-                              hintText: AppText.inputLastName(lang.isEnglish),
+                              hintText: AppText.inputLastName(lang),
                               hintStyle: TextStyle(color: Colors.grey.shade500),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(15),
@@ -159,7 +162,7 @@ class _CompleteProfileState extends State<CompleteProfile> {
                             width: double.infinity,
                             padding: EdgeInsets.fromLTRB(10, 0, 0, 5),
                             child: Text(
-                              AppText.address(lang.isEnglish),
+                              AppText.address(lang),
                               style: TextStyle(fontSize: 16),
                               textAlign: TextAlign.left,
                             ),
@@ -170,7 +173,7 @@ class _CompleteProfileState extends State<CompleteProfile> {
                             minLines: 3, 
                             maxLines: 6,
                             decoration: InputDecoration(
-                              hintText: AppText.inputAddress(lang.isEnglish),
+                              hintText: AppText.inputAddress(lang),
                               hintStyle: TextStyle(color: Colors.grey.shade500),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(15),
@@ -185,7 +188,7 @@ class _CompleteProfileState extends State<CompleteProfile> {
                             width: double.infinity,
                             padding: EdgeInsets.fromLTRB(10, 0, 0, 5),
                             child: Text(
-                              AppText.postalCode(lang.isEnglish),
+                              AppText.postalCode(lang),
                               style: TextStyle(fontSize: 16),
                               textAlign: TextAlign.left,
                             ),
@@ -193,7 +196,7 @@ class _CompleteProfileState extends State<CompleteProfile> {
                           TextField(
                             controller: auth.postalCode,
                             decoration: InputDecoration(
-                              hintText: AppText.inputPostalCode(lang.isEnglish),
+                              hintText: AppText.inputPostalCode(lang),
                               hintStyle: TextStyle(color: Colors.grey.shade500),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(15),
@@ -208,14 +211,14 @@ class _CompleteProfileState extends State<CompleteProfile> {
                             width: double.infinity,
                             padding: EdgeInsets.fromLTRB(10, 0, 0, 5),
                             child: Text(
-                              AppText.state(lang.isEnglish),
+                              AppText.state(lang),
                               style: TextStyle(fontSize: 16),
                               textAlign: TextAlign.left,
                             ),
                           ),
                           DropdownButtonFormField<String>(
                             value: auth.state,
-                            hint: const Text("Select State"),
+                            hint: Text(AppText.inputState(lang)),
                             dropdownColor: Colors.white,
                             icon: const Icon(Icons.keyboard_arrow_down),
                             iconSize: 28,
@@ -229,10 +232,8 @@ class _CompleteProfileState extends State<CompleteProfile> {
                             onChanged: (String? stateName) async {
                               if (stateName == null) return;
 
-                              // ✅ store NAME
                               auth.updateState(stateName);
 
-                              // 🔥 find ISO for API
                               final selectedState = stateList.firstWhere(
                                 (s) => s["name"] == stateName,
                                 orElse: () => {},
@@ -259,14 +260,14 @@ class _CompleteProfileState extends State<CompleteProfile> {
                             width: double.infinity,
                             padding: EdgeInsets.fromLTRB(10, 0, 0, 5),
                             child: Text(
-                              AppText.city(lang.isEnglish),
+                              AppText.city(lang),
                               style: TextStyle(fontSize: 16),
                               textAlign: TextAlign.left,
                             ),
                           ),
                           DropdownButtonFormField<String>(
                             value: auth.city,
-                            hint: const Text("Select City"),
+                            hint: Text(AppText.inputCity(lang)),
                             dropdownColor: Colors.white,
                             icon: const Icon(Icons.keyboard_arrow_down),
                             iconSize: 28,
@@ -294,7 +295,7 @@ class _CompleteProfileState extends State<CompleteProfile> {
                               final result = await context.read<AuthController>().completeProfile();
                               if (!mounted) return;
                               if (result['status'] == 'success') {
-                                CustomSnackbar.show(context, result['message'],Colors.white, Colors.greenAccent);
+                                CustomSnackbar.show(context, result['message'],Colors.greenAccent, Colors.white,);
                                 Navigator.of(context).pushAndRemoveUntil(
                                   PageRouteBuilder(
                                     pageBuilder: (_, __, ___) => const LoginScreen(),
@@ -306,16 +307,16 @@ class _CompleteProfileState extends State<CompleteProfile> {
                                     },
                                     transitionDuration: const Duration(milliseconds: 300),
                                   ),
-                                  (route) => false, // removes all existing routes
+                                  (route) => false, 
                                 );
                                 auth.clearAll();
                               } else {
-                                CustomSnackbar.show(context, result['message'] ?? "Error occurred",Colors.redAccent, Colors.white);
+                                CustomSnackbar.show(context, result['message'] ?? AppText.somethingWrong(lang), Colors.redAccent, Colors.white);
                               }
                             },
                             
                             child: Text(
-                              AppText.doneButton(lang.isEnglish),
+                              AppText.doneButton(lang),
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,

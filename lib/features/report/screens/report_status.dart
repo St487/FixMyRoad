@@ -1,4 +1,4 @@
-import 'package:fix_my_road/features/report/controllers/report.dart';
+import 'package:fix_my_road/features/report/controllers/reportController.dart';
 import 'package:fix_my_road/features/report/screens/edit_report.dart';
 import 'package:fix_my_road/provider/language_provider.dart';
 import 'package:fix_my_road/utils/app_text.dart';
@@ -20,7 +20,7 @@ class _ReportStatusState extends State<ReportStatus> {
   final List<String> filters = [
     'All', 
     'Pending', 
-    'Approved',  
+    'Approved',   
     'In Progress', 
     'Rejected',  
     'Completed'
@@ -358,177 +358,215 @@ class _ReportStatusState extends State<ReportStatus> {
     final languageProvider = context.read<LanguageProvider>();
     final lang = languageProvider.isEnglish;
 
-    String capitalizeWords(String s) {
-      return s
-          .split(' ')
-          .map((word) => word.isEmpty
-              ? word
-              : word[0].toUpperCase() + word.substring(1).toLowerCase())
-          .join(' ');
-    }
-
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.7,
+        initialChildSize: 0.8,
         minChildSize: 0.5,
-        maxChildSize: 0.9,
+        maxChildSize: 0.95,
         expand: false,
         builder: (context, scrollController) {
           return Container(
             decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+              color: Color(0xFFF8F9FD), // Slightly off-white for a premium look
+              borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
             ),
-            child: Column(
+            child: Stack(
               children: [
-                // drag handle
-                Container(
-                  margin: const EdgeInsets.symmetric(vertical: 12),
-                  height: 5,
-                  width: 50,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
+                // Main Content
+                ListView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.fromLTRB(24, 40, 24, 24),
+                  children: [
+                    // Header Section with Type and Status
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                AppText.issueType(report['issue_type'], lang).toUpperCase(),
+                                style: const TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF1A1A1A),
+                                ),
+                              ),
+                              Text(
+                                report['title'] ?? "",
+                                style: TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.grey[500],
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    
+                    // Status & Date Quick Info Row
+                    Row(
+                      children: [
+                        _statusBadge(formatStatus(report['status'] ?? "", lang)),
+                        const Spacer(),
+                        Icon(Icons.calendar_month_outlined, size: 16, color: Colors.grey[400]),
+                        const SizedBox(width: 4),
+                        Text(
+                          report['date'] ?? "",
+                          style: TextStyle(color: Colors.grey[600], fontWeight: FontWeight.w500),
+                        ),
+                      ],
+                    ),
 
-                Expanded(
-                  child: ListView(
-                    controller: scrollController,
-                    padding: const EdgeInsets.all(25),
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    const SizedBox(height: 32),
+
+                    // Location Card
+                    _sectionHeader(AppText.location(lang)),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))
+                        ],
+                      ),
+                      child: Row(
                         children: [
+                          const CircleAvatar(
+                            backgroundColor: Color(0xFFF0EEFA),
+                            child: Icon(Icons.location_on_rounded, color: Color(0xFF7864C8), size: 20),
+                          ),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: Text(
-                              capitalizeWords(
-                                AppText.issueType(report['issue_type'], lang),
-                              ),
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.grey[800],
-                              ),
+                              report['location'] ?? "",
+                              style: const TextStyle(fontSize: 15, color: Colors.black87),
                             ),
-                          ),
-                          const SizedBox(width: 10),
-                          _statusBadge(
-                            formatStatus(report['status'] ?? "", lang),
                           ),
                         ],
                       ),
+                    ),
 
-                      const SizedBox(height: 25),
+                    const SizedBox(height: 24),
 
-                      _detailItem(
-                        Icons.title,
-                        AppText.title(lang),
-                        report['title'] ?? "",
+                    // Description Card
+                    _sectionHeader(AppText.description(lang)),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.grey.shade100),
                       ),
-                      _detailItem(
-                        Icons.location_on_rounded,
-                        AppText.location(lang),
-                        report['location'] ?? "",
-                      ),
-                      _detailItem(
-                        Icons.calendar_today_rounded,
-                        AppText.submittedOn(lang),
-                        report['date'] ?? "",
-                      ),
-
-                      const Divider(height: 40),
-
-                      // Description
-                      Text(
-                        AppText.description(lang),
+                      child: Text(
+                        report['description'] ?? AppText.noDescription(lang),
                         style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey[600],
-                          letterSpacing: 1,
+                          fontSize: 15,
+                          height: 1.6,
+                          color: Colors.grey[800],
                         ),
                       ),
-                      const SizedBox(height: 10),
-                      Text(
-                        report['description'] ??
-                            AppText.noDescription(lang),
-                        style: const TextStyle(
-                          fontSize: 16,
-                          height: 1.5,
-                          color: Colors.black87,
-                        ),
-                      ),
+                    ),
 
-                      const SizedBox(height: 25),
+                    const SizedBox(height: 24),
 
-                      // Photos
-                      Text(
-                        AppText.photos(lang),
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey[600],
-                          letterSpacing: 1,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-
-                      photos.isNotEmpty
-                          ? SizedBox(
-                              height: 120,
-                              child: ListView.separated(
-                                scrollDirection: Axis.horizontal,
-                                itemCount: photos.length,
-                                separatorBuilder: (_, __) =>
-                                    const SizedBox(width: 10),
-                                itemBuilder: (context, index) {
-                                  String photoUrl = photos[index];
-                                  return GestureDetector(
-                                    onTap: () =>
-                                        _showFullImage(context, photoUrl),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(12),
-                                      child: Image.network(
-                                        photoUrl,
-                                        width: 120,
-                                        height: 120,
-                                        fit: BoxFit.cover,
-                                        errorBuilder:
-                                            (context, error, stackTrace) {
-                                          return Container(
-                                            width: 120,
-                                            height: 120,
-                                            color: Colors.grey[200],
-                                            child: const Icon(
-                                              Icons.broken_image,
-                                              color: Colors.grey,
-                                            ),
-                                          );
-                                        },
+                    // Photos Section
+                    _sectionHeader(AppText.photos(lang)),
+                    photos.isNotEmpty
+                        ? SizedBox(
+                            height: 140,
+                            child: ListView.separated(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: photos.length,
+                              separatorBuilder: (_, __) => const SizedBox(width: 12),
+                              itemBuilder: (context, index) {
+                                return GestureDetector(
+                                  onTap: () => _showFullImage(context, photos[index]),
+                                  child: Hero(
+                                    tag: photos[index],
+                                    child: Container(
+                                      width: 140,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(20),
+                                        image: DecorationImage(
+                                          image: NetworkImage(photos[index]),
+                                          fit: BoxFit.cover,
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(0.1),
+                                            blurRadius: 8,
+                                            offset: const Offset(0, 4),
+                                          )
+                                        ],
                                       ),
                                     ),
-                                  );
-                                },
-                              ),
-                            )
-                          : Text(
-                              AppText.noPhoto(lang),
-                              style: const TextStyle(
-                                fontSize: 16,
-                                color: Colors.black87,
-                              ),
+                                  ),
+                                );
+                              },
                             ),
-                    ],
+                          )
+                        : Container(
+                            height: 100,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Center(
+                              child: Text(AppText.noPhoto(lang), style: TextStyle(color: Colors.grey[500])),
+                            ),
+                          ),
+                    const SizedBox(height: 40),
+                  ],
+                ),
+
+                // Top Drag Handle Overlay
+                Positioned(
+                  top: 12,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: Container(
+                      height: 5,
+                      width: 45,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
                   ),
                 ),
               ],
             ),
           );
         },
+      ),
+    );
+  }
+
+  // --- UI Helpers ---
+
+  Widget _sectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12, left: 4),
+      child: Text(
+        title.toUpperCase(),
+        style: const TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w700,
+          color: Color(0xFF7864C8),
+          letterSpacing: 1.1,
+        ),
       ),
     );
   }

@@ -37,8 +37,8 @@ class AppText {
   static String inputLastName(bool en) => en ? 'Your Last Name' : 'Nama Akhir Anda';
   static String address(bool en) => en ? 'Address' : 'Alamat';
   static String inputAddress(bool en) => en ? 'Your Address' : 'Alamat Anda';
-  static String postalCode(bool en) => en ? 'Postal Code' : 'Kod Pos';
-  static String inputPostalCode(bool en) => en ? 'Your Postal Code' : 'Kod Pos Anda';
+  static String postalCode(bool en) => en ? 'Postal Code' : 'Pos Kod';
+  static String inputPostalCode(bool en) => en ? 'Your Postal Code' : 'Pos Kod Anda';
   static String state(bool en) => en ? 'State' : 'Negeri';
   static String inputState(bool en) => en ? 'Select Your State' : 'Pilih Negeri Anda';
   static String city(bool en) => en ? 'City' : 'Bandar';
@@ -86,6 +86,8 @@ class AppText {
   static String statusInProgress(bool en) => en ? "In Progress" : "Dalam Proses";
   static String navigateToLocation(bool en) => en ? 'Navigate to Location' : 'Arahkan ke Lokasi';
   static String openInMaps(bool en) => en ? 'Open in Maps' : 'Buka di Peta';
+  static String locationDetailUnavailable(bool en) => en ? 'Location details unavailable' : 'Butiran lokasi tidak tersedia';
+  static String unknownDate(bool en) => en ? 'Unknown Date' : 'Tarikh Tidak Diketahui';
   
 
 
@@ -101,6 +103,8 @@ class AppText {
   static String logout(bool en) => en ? 'Log Out' : 'Log Keluar';
   static String save(bool en) => en ? 'Save' : 'Simpan';
   static String contactUs(bool en) => en ? 'Contact Us' : 'Hubungi Kami';
+  static String selectLanguage(bool en) => en ? 'Select Language' : 'Pilih Bahasa';
+  static String chooseImageSource(bool en) => en ? 'Choose Image Source' : 'Pilih Sumber Imej';
 
   // ===== ADD REPORT SCREEN =====
   static const Map<String, Map<String, String>> types = {
@@ -203,14 +207,21 @@ class AppText {
 
   // ======== EDIT REPORT ========
   static String editReport(bool en) => en ? 'Edit Report' : 'Sunting Laporan';
-  static String maxUpload(bool en) => en ? 'You can only upload up to 3 photos.' : 'Anda hanya boleh memuat naik sehingga 3 foto.'; 
+  static String maxUpload(bool en) => en ? 'Maximum 3 photos allowed' : 'Maksimum 3 gambar dibenarkan'; 
   static String takePhoto(bool en) => en ? 'Take Photo' : 'Ambil Gambar';
   static String chooseGallery(bool en) => en ? 'Choose from Gallery' : 'Pilih dari Galeri';  
   static String addPhotos(bool en) => en ? 'Add Photos (max 3)' : 'Tambah Foto (maksimum 3)';  
 
   //======== ERROR AND SUCCESS ========
   static String updateReportSuccess(bool en) => en ? 'Report updated successfully!' : 'Laporan berjaya dikemas kini!';
+  static String submitReportSuccess(bool en) => en ? 'Report submitted successfully!' : 'Laporan berjaya dihantar!';
   static String failedToUpload(bool en) => en ? 'Failed to Upload. Please Try Again Later' : 'Gagal untuk Hantar Laporan, Sila Cuba Sebentar Lagi';
-  static String somethingWrong(bool en) => en ? 'Something went wrong. Please Try Again Later' : 'Sila Cuba Sebentar Lagi';
+  static String somethingWrong(bool en) => en ? 'Something went wrong. Please try again later' : 'Sila cuba sebentar lagi';
+  static String maxImagesWarning(bool isEnglish, int remainingSlots) {
+    return isEnglish
+        ? "Only $remainingSlots images were added (Max 3 allowed)"
+        : "Hanya $remainingSlots imej ditambah (Maksimum 3 dibenarkan)";
+  }
+  static String uploadFailed(bool en) => en ? 'Upload Failed' : 'Gagal untuk Muat Naik';
 
 }
