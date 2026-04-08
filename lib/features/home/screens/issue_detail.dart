@@ -209,7 +209,7 @@ class _IssueDetailView extends StatelessWidget {
             right: 0,
             child: Center(
               child: Container(
-                height: 65,
+                height: 60,
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Material(
                   borderRadius: BorderRadius.circular(30),
@@ -247,7 +247,6 @@ class _IssueDetailView extends StatelessWidget {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 4),
                             Text(
                               AppText.openInMaps(lang),
                               style: const TextStyle(
