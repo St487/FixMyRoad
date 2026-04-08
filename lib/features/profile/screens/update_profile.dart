@@ -7,6 +7,7 @@ import 'package:fix_my_road/features/profile/controllers/profileController.dart'
 import 'package:fix_my_road/provider/language_provider.dart';
 import 'package:fix_my_road/shared/support_widget/snack_bar.dart';
 import 'package:fix_my_road/utils/app_text.dart';
+import 'package:fix_my_road/utils/cameraPermission.dart';
 import 'package:fix_my_road/utils/myconfig.dart';
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -439,38 +440,98 @@ Future<void> _loadProfileDefaults() async {
     }
   }
 
+  void _pickImageWithPermission(ImageSource source, bool lang) async {
+    bool granted = await CameraPermissionHandler.checkAndRequest(context);
+    if (!granted) return; // stop if permission denied
+
+    await pickImage(source, lang);
+  }
+
   void _showImageSourceDialog(bool lang) {
     showModalBottomSheet(
       context: context,
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (context) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: EdgeInsets.all(20),
-            child: Text(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Handle bar for better UX
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Text(
               AppText.chooseImageSource(lang),
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontSize: 18, 
+                fontWeight: FontWeight.w800,
+                color: Colors.black,
+              ),
+            ),
+            const SizedBox(height: 30),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildPickerOption(
+                  icon: Icons.camera_alt_rounded,
+                  label: AppText.takePhoto(lang),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _pickImageWithPermission(ImageSource.camera, lang);
+                  },
+                ),
+                _buildPickerOption(
+                  icon: Icons.photo_library_rounded,
+                  label: AppText.chooseGallery(lang),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _pickImageWithPermission(ImageSource.gallery, lang);
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Helper widget to create the circular icon buttons seen in modern apps
+  Widget _buildPickerOption({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Container(
+            width: 70,
+            height: 70,
+            decoration: BoxDecoration(
+              color: Colors.deepPurple.withOpacity(0.08),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: Colors.deepPurple, size: 30),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey[800],
             ),
           ),
-          ListTile(
-            leading: const Icon(Icons.camera_alt),
-            title: Text(AppText.takePhoto(lang)),
-            onTap: () {
-              Navigator.pop(context);
-              pickImage(ImageSource.camera, lang);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.photo_library),
-            title: Text(AppText.chooseGallery(lang)),
-            onTap: () {
-              Navigator.pop(context);
-              pickImage(ImageSource.gallery, lang);
-            },
-          ),
-          const SizedBox(height: 20),
         ],
       ),
     );

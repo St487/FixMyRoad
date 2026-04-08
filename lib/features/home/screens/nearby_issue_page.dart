@@ -3,6 +3,7 @@
 import 'package:fix_my_road/features/home/screens/issue_detail.dart';
 import 'package:fix_my_road/provider/language_provider.dart';
 import 'package:fix_my_road/utils/app_text.dart';
+import 'package:fix_my_road/utils/locationPermission.dart';
 import 'package:flutter/material.dart';
 import 'package:fix_my_road/features/home/controllers/homeController.dart';
 import 'package:fix_my_road/utils/myconfig.dart';
@@ -22,10 +23,19 @@ class _NearbyIssuesPageState extends State<NearbyIssuesPage> {
   void initState() {
     super.initState();
 
-    // Schedule after first frame to avoid setState during build
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final homeController = Provider.of<HomeController>(context, listen: false);
-      await homeController.initUserData();
+      
+      // 1. Check location permission
+      bool granted = await LocationPermissionHandler.checkAndRequest(context);
+      if (!granted) {
+        // Mark in controller that permission is denied
+        homeController.locationPermissionDenied = true;
+      } else {
+        // 2. Initialize user data if permission granted
+        await homeController.initUserData();
+      }
+
       if (mounted) {
         setState(() {
           _loading = false;
@@ -81,7 +91,13 @@ class _NearbyIssuesPageState extends State<NearbyIssuesPage> {
       ),
       body: RefreshIndicator(
         color: kAccentPurple,
-        onRefresh: () async => await homeController.initUserData(),
+        onRefresh: () async {
+          bool granted = await LocationPermissionHandler.checkAndRequest(context);
+          setState(() {
+            homeController.locationPermissionDenied = !granted;
+          });
+          if (granted) await homeController.initUserData();
+        },
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.only(top: 15, left: 15, right: 15, bottom: 20),

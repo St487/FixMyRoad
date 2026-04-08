@@ -1,8 +1,12 @@
+import 'package:fix_my_road/provider/language_provider.dart';
+import 'package:fix_my_road/utils/app_text.dart';
+import 'package:fix_my_road/utils/locationPermission.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:provider/provider.dart';
 
 class MapPickerPage extends StatefulWidget {
   const MapPickerPage({super.key});
@@ -21,41 +25,60 @@ class _MapPickerPageState extends State<MapPickerPage> {
   @override
   void initState() {
     super.initState();
-    _requestPermission();
-    _updateAddress(_selectedPosition); 
+    _initLocation();
+  }
+  Future<void> _initLocation() async {
+    bool granted = await LocationPermissionHandler.checkAndRequest(context);
+    if (granted) {
+      await _goToCurrentLocation();
+    }
   }
 
-  Future<void> _requestPermission() async {
-    var status = await Permission.location.status;
-    if (!status.isGranted) await Permission.location.request();
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   Future<void> _goToCurrentLocation() async {
+    final lang = context.read<LanguageProvider>().isEnglish;
+
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Location services are disabled")),
-      );
+      _showMessage(AppText.locationServicesDisabled(lang));
       return;
     }
 
     LocationPermission permission = await Geolocator.checkPermission();
+
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) return;
+      if (permission == LocationPermission.denied) {
+        _showMessage(AppText.locationPermissionDenied(lang));
+        return;
+      }
     }
 
-    Position position = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
-    );
+    if (permission == LocationPermission.deniedForever) {
+      _showMessage(AppText.locationPermissionDeniedForever(lang));
+      return;
+    }
 
-    LatLng current = LatLng(position.latitude, position.longitude);
-    setState(() {
-      _selectedPosition = current;
-    });
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
 
-    _controller?.animateCamera(CameraUpdate.newLatLngZoom(current, 16));
-    await _updateAddress(current);
+      LatLng current = LatLng(position.latitude, position.longitude);
+      setState(() {
+        _selectedPosition = current;
+      });
+
+      _controller?.animateCamera(CameraUpdate.newLatLngZoom(current, 16));
+      await _updateAddress(current);
+    } catch (e) {
+      _showMessage(AppText.failedToGetLocation(lang));
+    }
   }
 
   Future<void> _updateAddress(LatLng pos) async {

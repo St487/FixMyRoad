@@ -5,6 +5,7 @@ import 'package:fix_my_road/features/report/controllers/reportController.dart';
 import 'package:fix_my_road/provider/language_provider.dart';
 import 'package:fix_my_road/shared/support_widget/snack_bar.dart';
 import 'package:fix_my_road/utils/app_text.dart';
+import 'package:fix_my_road/utils/cameraPermission.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
@@ -105,6 +106,15 @@ class _EditReportState extends State<EditReport> {
     if (image != null && mounted) {
       setState(() => _selectedImages.add(File(image.path)));
     }
+  }
+
+  Future<void> _pickFromCameraWithPermission(bool lang) async {
+    // Check camera permission
+    bool granted = await CameraPermissionHandler.checkAndRequest(context);
+    if (!granted) return; // Stop if permission denied
+
+    // Now safe to pick image
+    await _pickFromCamera(lang);
   }
 
   Future<void> _pickFromGallery(bool lang) async {
@@ -407,15 +417,46 @@ class _EditReportState extends State<EditReport> {
   void _showPickerOptions(bool lang) {
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (_) => SafeArea(
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => Container(
+        padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ListTile(leading: const Icon(Icons.camera_alt), title: Text(AppText.takePhoto(lang)), onTap: () { Navigator.pop(context); _pickFromCamera(lang); }),
-            ListTile(leading: const Icon(Icons.photo_library), title: Text(AppText.chooseGallery(lang)), onTap: () { Navigator.pop(context); _pickFromGallery(lang); }),
+            Text(AppText.selectSource(lang), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _sourceOption(Icons.camera_alt_rounded, AppText.takePhoto(lang), () => _pickFromCameraWithPermission(lang)),
+                _sourceOption(Icons.image_rounded, AppText.chooseGallery(lang), () => _pickFromGallery(lang)),
+              ],
+            ),
+            const SizedBox(height: 20),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _sourceOption(IconData icon, String label, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.pop(context);
+        onTap();
+      },
+      child: Column(
+        children: [
+          CircleAvatar(
+            radius: 30,
+            backgroundColor: Colors.deepPurple.withOpacity(0.1),
+            child: Icon(icon, color: Colors.deepPurple, size: 28),
+          ),
+          const SizedBox(height: 8),
+          Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
+        ],
       ),
     );
   }

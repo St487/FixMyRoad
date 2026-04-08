@@ -71,7 +71,6 @@ class AppText {
   static String reportStatus(bool en) => en ? 'Report Status' : 'Status Laporan';
   static String nearbyIssues(bool en) => en ? 'Nearby Issues' : 'Masalah Terdekat';
   static String viewAll(bool en) => en ? 'Show All' : 'Tampilkan Semua';
-  static String locationPermissionDenied(bool en) => en ? 'Location permission not allowed' : 'Izin lokasi tidak diizinkan';
   static String noNearbyIssues(bool en) => en ? 'No nearby issues found.' : 'Tidak ditemukan masalah terdekat.';
   static String away(bool en) => en ? 'away' : 'dari sini';
   static String issueNotFound(bool en) => en ? 'Failed to load issue details' : 'Gagal memuat detail masalah';
@@ -88,10 +87,6 @@ class AppText {
   static String openInMaps(bool en) => en ? 'Open in Maps' : 'Buka di Peta';
   static String locationDetailUnavailable(bool en) => en ? 'Location details unavailable' : 'Butiran lokasi tidak tersedia';
   static String unknownDate(bool en) => en ? 'Unknown Date' : 'Tarikh Tidak Diketahui';
-  
-
-
-
 
   // ===== PROFILE SCREEN =====
   static String myProfile(bool en) => en ? 'My Profile' : 'Profil Saya';
@@ -223,5 +218,44 @@ class AppText {
         : "Hanya $remainingSlots imej ditambah (Maksimum 3 dibenarkan)";
   }
   static String uploadFailed(bool en) => en ? 'Upload Failed' : 'Gagal untuk Muat Naik';
+
+  // ====== PERMISSION ======
+  static String locationPermissionDenied(bool isEnglish) =>
+    isEnglish ? "Location permission denied" : "Kebenaran lokasi ditolak";
+
+  static String locationPermissionDeniedForever(bool isEnglish) =>
+      isEnglish
+          ? "Location permissions are permanently denied. Please enable it from settings."
+          : "Kebenaran lokasi telah ditolak secara kekal. Sila aktifkan dari tetapan.";
+
+  static String locationServicesDisabled(bool isEnglish) =>
+      isEnglish ? "Location services are disabled" : "Perkhidmatan lokasi dimatikan";
+
+  static String failedToGetLocation(bool isEnglish) =>
+      isEnglish ? "Failed to get location" : "Gagal mendapatkan lokasi";
+
+  static String locationPermissionTitle(bool isEnglish) =>
+      isEnglish ? "Location Permission Required" : "Kebenaran Lokasi Diperlukan";
+
+  static String locationPermissionMessage(bool isEnglish) =>
+      isEnglish
+          ? "Please enable location permission in settings to use this feature."
+          : "Sila aktifkan kebenaran lokasi dalam tetapan untuk menggunakan ciri ini.";
+
+  static String cancel(bool isEnglish) => isEnglish ? "Cancel" : "Batal";
+
+  static String openSettings(bool isEnglish) =>
+      isEnglish ? "Open Settings" : "Buka Tetapan";
+
+  static String cameraPermissionTitle(bool isEnglish) =>
+      isEnglish ? "Camera Permission Required" : "Kebenaran Kamera Diperlukan";
+
+  static String cameraPermissionMessage(bool isEnglish) =>
+      isEnglish
+          ? "Please enable camera permission in settings to use this feature."
+          : "Sila aktifkan kebenaran kamera dalam tetapan untuk menggunakan ciri ini.";
+
+  static String selectSource(bool isEnglish) =>
+      isEnglish ? "Select Source" : "Pilih Sumber";
 
 }

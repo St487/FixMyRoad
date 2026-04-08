@@ -3,6 +3,7 @@ import 'package:fix_my_road/features/report/controllers/reportController.dart';
 import 'package:fix_my_road/provider/language_provider.dart';
 import 'package:fix_my_road/shared/support_widget/snack_bar.dart';
 import 'package:fix_my_road/utils/app_text.dart';
+import 'package:fix_my_road/utils/cameraPermission.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
@@ -30,8 +31,14 @@ class _AddReportState extends State<AddReport> {
 
   // LOGIC PRESERVED: Camera/Gallery Picking
   Future<void> _pickFromCamera() async {
+    final lang = context.read<LanguageProvider>().isEnglish;
+    // Check permission first
+    bool granted = await CameraPermissionHandler.checkAndRequest(context);
+    if (!granted) return; // Stop if permission denied
+
     final report = context.read<ReportController>();
     if (report.selectedImages.length >= 3) return;
+
     final XFile? image = await _picker.pickImage(source: ImageSource.camera, imageQuality: 70);
     if (image != null) {
       setState(() => report.selectedImages.add(File(image.path)));
@@ -333,7 +340,7 @@ class _AddReportState extends State<AddReport> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text("Select Source", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            Text(AppText.selectSource(lang), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
             const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,

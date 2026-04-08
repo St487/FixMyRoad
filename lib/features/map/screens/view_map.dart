@@ -1,10 +1,14 @@
 import 'package:fix_my_road/features/map/controller/mapController.dart';
+import 'package:fix_my_road/provider/language_provider.dart';
+import 'package:fix_my_road/shared/support_widget/snack_bar.dart';
+import 'package:fix_my_road/utils/locationPermission.dart';
 import 'package:fix_my_road/utils/myconfig.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'dart:ui' as ui;
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ViewMap extends StatefulWidget {
@@ -18,11 +22,28 @@ class _ViewMapState extends State<ViewMap> {
   Map<String, BitmapDescriptor> customIcons = {};
   late GoogleMapController mapController;
   Location location = Location();
-  
-  bool _isCheckingPermissions = true; 
+
+  bool _isCheckingPermissions = true;
   bool _isMapRendering = true;
 
-  Set<String> selectedCategories = {"All"};
+  Set<Marker> _markers = {};
+
+  Map<String, Map<String, String>> statusMapping = {
+    "in_progress": {"en": "In Progress", "ms": "Dalam Proses"},
+    "approved": {"en": "Reported", "ms": "Dilaporkan"},
+  };
+
+  Map<String, Map<String, String>> issueTypeMappingMalay = {
+    "Pothole": {"en": "Pothole", "ms": "Lubang Jalan"},
+    "Drainage": {"en": "Drainage", "ms": "Saliran / Banjir"},
+    "Street Light": {"en": "Street Light", "ms": "Lampu Jalan"},
+    "Traffic Light": {"en": "Traffic Light", "ms": "Lampu Isyarat"},
+    "Road Sign": {"en": "Road Sign", "ms": "Tanda Jalan"},
+    "Roadside Safety": {"en": "Roadside Safety", "ms": "Keselamatan tepi jalan"},
+    "Public Transport Facilities": {"en": "Public Transport Facilities", "ms": "Kemudahan Pengangkutan Awam"},
+    "Other": {"en": "Other", "ms": "Lain-lain"},
+  };
+
   List<String> categories = [
     "All",
     "Pothole",
@@ -34,6 +55,7 @@ class _ViewMapState extends State<ViewMap> {
     "Public Transport Facilities",
     "Other",
   ];
+  Set<String> selectedCategories = {"All"};
 
   Map<String, String> categoryIcons = {
     "Pothole": "assets/icons/pothole.png",
@@ -46,77 +68,6 @@ class _ViewMapState extends State<ViewMap> {
     "Other": "assets/icons/other.png",
   };
 
-  Future<void> _loadIssuesFromAPI() async {
-    try {
-      final data = await MapController.getIssues();
-
-      Set<Marker> markers = data
-          .where((issue) {
-            if (selectedCategories.contains("All")) return true;
-
-            String mapped =
-                issueTypeMapping[issue['category']] ?? issue['category'];
-
-            return selectedCategories.contains(mapped);
-          })
-          .map<Marker>((issue) {
-        String mapped =
-            issueTypeMapping[issue['category']] ?? issue['category'];
-
-        return Marker(
-          markerId: MarkerId(issue['id'].toString()),
-          position: LatLng(issue['latitude'], issue['longitude']),
-          icon: customIcons[mapped] ?? BitmapDescriptor.defaultMarker,
-          onTap: () => _showIssueDetails(issue),
-        );
-      }).toSet();
-
-      setState(() {
-        _markers = markers;
-      });
-    } catch (e) {
-      print(e);
-    }
-  }
-
-  Set<Marker> _markers = {};
-
-  @override
-  void initState() {
-    super.initState();
-    _init();
-  }
-
-  Future<void> _init() async {
-    await _loadIcons();          // wait icons
-    await _initializeMapFlow();  // permissions
-    await _loadIssuesFromAPI();  // THEN load markers
-  }
-
-  Future<void> _initializeMapFlow() async {
-    bool serviceEnabled = await location.serviceEnabled();
-    if (!serviceEnabled) {
-      serviceEnabled = await location.requestService();
-      if (!serviceEnabled) {
-        _showErrorDialog("GPS is required.");
-        return;
-      }
-    }
-
-    PermissionStatus permissionGranted = await location.hasPermission();
-    if (permissionGranted == PermissionStatus.denied) {
-      permissionGranted = await location.requestPermission();
-      if (permissionGranted != PermissionStatus.granted) {
-        _showErrorDialog("Location permission denied.");
-        return;
-      }
-    }
-
-    setState(() {
-      _isCheckingPermissions = false;
-    });
-  }
-
   Map<String, String> issueTypeMapping = {
     "Saliran / Banjir": "Drainage",
     "Lubang Jalan": "Pothole",
@@ -128,299 +79,254 @@ class _ViewMapState extends State<ViewMap> {
     "Lain-lain": "Other",
   };
 
-  void _showIssueDetails(Map<String, dynamic> issue) {
-  LatLng position = LatLng(issue['latitude'], issue['longitude']);
-  String status = issue['status'].toString().toLowerCase();
+  @override
+  void initState() {
+    super.initState();
+    _init();
+  }
 
-  // Color logic for status
-  Color statusColor = status == 'resolved' ? Colors.green : const Color(0xFF7864C8);
-  String rawDate = issue['created_at'] ?? 'No Date';
-  String formattedDate = rawDate.split(' ')[0];
+  Future<void> _init() async {
+    await _loadIcons();
+    await _initializeMapFlow();
+    await _loadIssuesFromAPI();
+  }
 
-  showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    builder: (context) {
-      return DraggableScrollableSheet(
-        initialChildSize: 0.7, // Slightly taller for better first impression
-        minChildSize: 0.5,
-        maxChildSize: 0.95,
-        expand: false,
-        builder: (_, controller) {
-          return Container(
-            decoration: const BoxDecoration(
-              color: Color(0xFFF8F9FA), // Light grey background for contrast
-              borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-            ),
-            child: Column(
-              children: [
-                Container(
-                  margin: const EdgeInsets.symmetric(vertical: 15),
-                  height: 6,
-                  width: 50,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
+  Future<void> _initializeMapFlow() async {
+    final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
+    bool isEnglish = languageProvider.isEnglish;
 
-                Expanded(
-                  child: ListView(
-                    controller: controller,
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    children: [
-                      // --- HEADER & STATUS ---
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Wrap(
-                            alignment: WrapAlignment.spaceBetween, // Spaced apart if on one line
-                            crossAxisAlignment: WrapCrossAlignment.center,
-                            spacing: 10, // Horizontal gap
-                            runSpacing: 8,
-                            children: [
-                              Text(
-                                issue['title'],
-                                style: const TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: -0.5,
-                                ),
-                              ),
-                              ]
-                          ),
-                          
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: statusColor.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  status.toUpperCase(),
-                                  style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 11),
-                                ),
-                              ),
-                        ],
-                      ),
-                     
-                      const SizedBox(height: 25),
+    bool serviceEnabled = await location.serviceEnabled();
+    if (!serviceEnabled) {
+      serviceEnabled = await location.requestService();
+      if (!serviceEnabled) {
+        _showErrorDialog(isEnglish ? 'GPS is required' : 'GPS diperlukan');
+        return;
+      }
+    }
 
-                      // --- INFO GRID CARDS (DATE INSTEAD OF AREA) ---
-                      Row(
-                        children: [
-                          _buildModernInfoCard(Icons.category_rounded, "Category", issue['category']),
-                          const SizedBox(width: 15),
-                          _buildModernInfoCard(Icons.calendar_today_rounded, "Date Reported", formattedDate),
-                        ],
-                      ),
+    bool granted = await LocationPermissionHandler.checkAndRequest(context);
+    if (!granted) {
+      _showErrorDialog(isEnglish ? 'Location permission denied' : 'Kebenaran lokasi ditolak');
+      return;
+    }
 
-                      const SizedBox(height: 30),
+    setState(() {
+      _isCheckingPermissions = false;
+    });
+  }
 
-                      // --- DESCRIPTION SECTION ---
-                      const Text("Report Details", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 10),
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.grey[200]!),
-                        ),
-                        child: Text(
-                          issue['description'],
-                          style: TextStyle(color: Colors.grey[700], height: 1.6, fontSize: 15),
-                        ),
-                      ),
+  Future<void> _loadIssuesFromAPI() async {
+    try {
+      final data = await MapController.getIssues();
 
-                      const SizedBox(height: 30),
+      Set<Marker> markers = await Future.microtask(() {
+        return data.where((issue) {
+          String status = (issue['status'] ?? '').toString().toLowerCase();
+          if (status != 'in_progress' && status != 'approved') return false;
 
-                      // --- ENHANCED EVIDENCE PHOTOS ---
-                      if (issue['photo1'] != null) ...[
-                        const Text("Evidence Gallery", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 15),
-                        SizedBox(
-                          height: 140,
-                          child: ListView(
-                            scrollDirection: Axis.horizontal,
-                            children: [
-                              if (issue['photo1'] != null) _buildEnhancedImage(issue['photo1']),
-                              if (issue['photo2'] != null) _buildEnhancedImage(issue['photo2']),
-                              if (issue['photo3'] != null) _buildEnhancedImage(issue['photo3']),
-                            ],
-                          ),
-                        ),
-                      ],
-
-                      const SizedBox(height: 30),
-
-                      // --- MINI MAP PREVIEW ---
-                      const Text("Location Tracking", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 15),
-                      Container(
-                        height: 180,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(24),
-                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 20, offset: const Offset(0, 10))],
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(24),
-                          child: GoogleMap(
-                            liteModeEnabled: true,
-                            initialCameraPosition: CameraPosition(target: position, zoom: 16),
-                            markers: {Marker(markerId: const MarkerId("prev"), position: position)},
-                            zoomControlsEnabled: false,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 20,),
-                      ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF7864C8),
-                          foregroundColor: Colors.white,
-                          minimumSize: const Size(double.infinity, 56),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                          elevation: 0,
-                        ),
-                        icon: const Icon(Icons.directions_outlined),
-                        label: const Text("Start Navigation", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                        onPressed: () async {
-                          final url = Uri.parse(
-                          "https://www.google.com/maps/dir/?api=1&destination=${issue['latitude']},${issue['longitude']}");
-                          if (await canLaunchUrl(url)) await launchUrl(url);
-                        },
-                      ),
-
-                      const SizedBox(height: 20,),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+          if (selectedCategories.contains("All")) return true;
+          String mapped = issueTypeMapping[issue['category']] ?? issue['category'];
+          return selectedCategories.contains(mapped);
+        }).map<Marker>((issue) {
+          String mapped = issueTypeMapping[issue['category']] ?? issue['category'];
+          return Marker(
+            markerId: MarkerId(issue['id'].toString()),
+            position: LatLng(issue['latitude'], issue['longitude']),
+            icon: customIcons[mapped] ?? BitmapDescriptor.defaultMarker,
+            onTap: () => _showIssueDetails(issue),
           );
-        },
-      );
-    },
-  );
-}
+        }).toSet();
+      });
 
-Widget _buildModernInfoCard(IconData icon, String label, String value) {
-  return Expanded(
-    child: Container(
-      height: 125,
-      padding: const EdgeInsets.all(15),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10)],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: const Color(0xFF7864C8), size: 22),
-          const SizedBox(height: 10),
-          Text(label, style: TextStyle(color: Colors.grey[500], fontSize: 12)),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-        ],
-      ),
-    ),
-  );
-}
+      setState(() => _markers = markers);
+    } catch (e) {
+      print(e);
+    }
+  }
 
-  Widget _buildEnhancedImage(String path) {
-  String imageUrl = "${MyConfig.myurl}/$path";
+  void _showIssueDetails(Map<String, dynamic> issue) {
+    final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
+    bool isEnglish = languageProvider.isEnglish;
 
-  return GestureDetector(
-    onTap: () {
-      // Open fullscreen image
-      showDialog(
+    LatLng position = LatLng(issue['latitude'], issue['longitude']);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      showModalBottomSheet(
         context: context,
-        barrierColor: Colors.black, // Background color
-        builder: (_) => GestureDetector(
-          onTap: () => Navigator.of(context).pop(), // Tap anywhere to close
-          child: Container(
-            color: Colors.black,
-            child: Center(
-              child: InteractiveViewer(
-                child: Image.network(
-                  imageUrl,
-                  fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) => Container(
-                    color: Colors.grey[200],
-                    child: const Icon(Icons.image_not_supported_outlined, color: Colors.white, size: 50),
-                  ),
-                ),
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (_) => _buildIssueDetailSheet(issue, position, isEnglish),
+      );
+    });
+  }
+
+  Widget _buildIssueDetailSheet(Map<String, dynamic> issue, LatLng position, bool isEnglish) {
+    final statusInfo = getStatusInfo(issue['status'].toString().toLowerCase(), isEnglish);
+    final displayStatus = statusInfo['text'];
+    final statusColor = statusInfo['color'];
+    String rawDate = issue['created_at'] ?? (isEnglish ? "No Date" : "Tiada Tarikh");
+    String formattedDate = rawDate.split(' ')[0];
+    String issueTypeDisplay = issueTypeMappingMalay[issue['category']]?[(isEnglish ? "en" : "ms")] ?? issue['category'];
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.7,
+      minChildSize: 0.5,
+      maxChildSize: 0.95,
+      expand: false,
+      builder: (_, controller) => Container(
+        decoration: const BoxDecoration(
+          color: Color(0xFFF8F9FA),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+        ),
+        child: Column(
+          children: [
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 15),
+              height: 6,
+              width: 50,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(10),
               ),
             ),
-          ),
+            Expanded(
+              child: ListView(
+                controller: controller,
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(issue['title'], style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: statusColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(displayStatus.toUpperCase(), style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 11)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 25),
+                  Row(
+                    children: [
+                      Expanded(child: _buildModernInfoCard(Icons.category_rounded, isEnglish ? "Category" : "Kategori", issueTypeDisplay)),
+                      const SizedBox(width: 15),
+                      Expanded(child: _buildModernInfoCard(Icons.calendar_today_rounded, isEnglish ? "Date Reported" : "Tarikh Dilaporkan", formattedDate)),
+                    ],
+                  ),
+                  const SizedBox(height: 30),
+                  Text(isEnglish ? "Report Details" : "Butiran Laporan", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 10),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.grey[200]!)),
+                    child: Text(issue['description'], style: TextStyle(color: Colors.grey[700], height: 1.6, fontSize: 15)),
+                  ),
+                  const SizedBox(height: 30),
+                  if (issue['photo1'] != null) ...[
+                    Text(isEnglish ? "Photos Provided" : "Gambar Disediakan", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 15),
+                    SizedBox(
+                      height: 140,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        children: [
+                          if (issue['photo1'] != null) _buildEnhancedImage(issue['photo1']),
+                          if (issue['photo2'] != null) _buildEnhancedImage(issue['photo2']),
+                          if (issue['photo3'] != null) _buildEnhancedImage(issue['photo3']),
+                        ],
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 30),
+                  Text(isEnglish ? "Location Tracking" : "Penjejakan Lokasi", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 15),
+                  Container(
+                    height: 180,
+                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(24)),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(24),
+                      child: GoogleMap(
+                        liteModeEnabled: true,
+                        initialCameraPosition: CameraPosition(target: position, zoom: 16),
+                        markers: {Marker(markerId: const MarkerId("prev"), position: position)},
+                        zoomControlsEnabled: false,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF7864C8), foregroundColor: Colors.white, minimumSize: const Size(double.infinity, 56), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)), elevation: 0),
+                    icon: const Icon(Icons.directions_outlined),
+                    label: Text(isEnglish ? "Open In Google Map" : "Buka Dalam Peta Google", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                    onPressed: () async {
+                      final url = Uri.parse("https://www.google.com/maps/dir/?api=1&destination=${issue['latitude']},${issue['longitude']}");
+                      if (await canLaunchUrl(url)) await launchUrl(url);
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              ),
+            ),
+          ],
         ),
-      );
-    },
-    child: Container(
+      ),
+    );
+  }
+
+  Widget _buildModernInfoCard(IconData icon, String label, String value) => Container(
+    padding: const EdgeInsets.all(15),
+    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10)]),
+    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Icon(icon, color: const Color(0xFF7864C8), size: 22),
+      const SizedBox(height: 10),
+      Text(label, style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+      Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+    ]),
+  );
+
+  Widget _buildEnhancedImage(String path) {
+    String imageUrl = "${MyConfig.myurl}/$path";
+    return Container(
       margin: const EdgeInsets.only(right: 15),
       width: 200,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 8)],
-      ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
         child: Image.network(
           imageUrl,
           fit: BoxFit.cover,
+          loadingBuilder: (context, child, progress) {
+            if (progress == null) return child;
+            return Center(child: CircularProgressIndicator());
+          },
           errorBuilder: (_, __, ___) => Container(
             color: Colors.grey[200],
             child: const Icon(Icons.image_not_supported_outlined),
           ),
         ),
       ),
-    ),
-  );
-}
-  // --- HELPER WIDGETS ---
-
-  Widget _buildInfoTile(IconData icon, String label, String value) {
-    return Expanded(
-      child: Row(
-        children: [
-          CircleAvatar(
-            backgroundColor: Colors.grey[100],
-            radius: 18,
-            child: Icon(icon, size: 18, color: Colors.grey[700]),
-          ),
-          const SizedBox(width: 12),
-          Flexible(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(label, style: TextStyle(color: Colors.grey[500], fontSize: 12)),
-                Text(value, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14), overflow: TextOverflow.ellipsis),
-              ],
-            ),
-          )
-        ],
-      ),
     );
   }
 
-  Widget _buildModernImage(String path) {
-    return Container(
-      margin: const EdgeInsets.only(right: 12),
-      width: 160,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: Image.network(
-          "${MyConfig.myurl}/$path",
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey[200], child: const Icon(Icons.broken_image)),
-        ),
-      ),
+  void _showErrorDialog(String message) => 
+    CustomSnackbar.show(
+      context,
+      message,
+      Colors.redAccent,
+      Colors.white,
     );
-  }
 
-  void _showErrorDialog(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  Map<String, dynamic> getStatusInfo(String status, bool isEnglish) {
+    String text = statusMapping[status]?[(isEnglish ? "en" : "ms")] ?? status;
+    Color color;
+    switch (status) {
+      case "in_progress": color = Colors.purple; break;
+      case "approved": color = Colors.blue; break;
+      default: color = Colors.grey;
+    }
+    return {"text": text, "color": color};
   }
 
   void _onMapCreated(GoogleMapController controller) async {
@@ -469,53 +375,65 @@ Widget _buildModernInfoCard(IconData icon, String label, String value) {
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
-                children: categories.map((cat) {
-                  bool isSelected = selectedCategories.contains(cat);
-                  return AnimatedContainer(
-                    duration: const Duration(milliseconds: 250),
-                    margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-                    child: FilterChip(
-                      elevation: isSelected ? 2 : 0, // Reduced elevation for a flatter look
-                      pressElevation: 2,
-                      showCheckmark: false,
-                      backgroundColor: Colors.white.withOpacity(0.9),
-                      selectedColor: const Color(0xFF7864C8),
-                      // Reduced vertical padding to keep container height same while icons grow
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6), 
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(100),
-                        side: BorderSide(
-                          color: isSelected ? Colors.transparent : Colors.grey.withOpacity(0.2),
+                  children: categories.map((cat) {
+                    bool isSelected = selectedCategories.contains(cat);
+                    final languageProvider = Provider.of<LanguageProvider>(context);
+                    bool isEnglish = languageProvider.isEnglish;
+
+                    // Determine label based on current language
+                    String displayLabel;
+                    if (cat == "All") {
+                      displayLabel = isEnglish ? "All" : "Semua";
+                    } else {
+                      displayLabel = isEnglish
+                          ? cat
+                          : issueTypeMappingMalay[cat]?["ms"] ?? cat;
+                    }
+
+                    return AnimatedContainer(
+                      duration: const Duration(milliseconds: 250),
+                      margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                      child: FilterChip(
+                        elevation: isSelected ? 2 : 0,
+                        pressElevation: 2,
+                        showCheckmark: false,
+                        backgroundColor: Colors.white.withOpacity(0.9),
+                        selectedColor: const Color(0xFF7864C8),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(100),
+                          side: BorderSide(
+                            color: isSelected ? Colors.transparent : Colors.grey.withOpacity(0.2),
+                          ),
                         ),
-                      ),
-                      avatar: ClipOval(
-                      child: Container(
-                        width: 36,  // Bigger width
-                        height: 36, // Bigger height
-                        color: Colors.transparent,
-                        child: cat == "All"
-                            ? Icon(Icons.layers_outlined, color: isSelected ? Colors.white : Colors.black87)
-                            : Image.asset(
-                                categoryIcons[cat]!,
-                                fit: BoxFit.cover,
-                                color: isSelected ? Colors.white : null,
-                              ),
-                      ),
-                    ),
-                      label: Text(
-                        cat,
-                        style: TextStyle(
-                          color: isSelected ? Colors.white : Colors.black87,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                          fontSize: 13,
+                        avatar: ClipOval(
+                          child: Container(
+                            width: 36,
+                            height: 36,
+                            color: Colors.transparent,
+                            child: cat == "All"
+                                ? Icon(Icons.layers_outlined, color: isSelected ? Colors.white : Colors.black87)
+                                : Image.asset(
+                                    categoryIcons[cat]!,
+                                    fit: BoxFit.cover,
+                                    color: isSelected ? Colors.white : null,
+                                  ),
+                          ),
                         ),
+                        label: Text(
+                          displayLabel,
+                          style: TextStyle(
+                            color: isSelected ? Colors.white : Colors.black87,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                            fontSize: 13,
+                          ),
+                        ),
+                        selected: isSelected,
+                        onSelected: (selected) => _toggleCategory(cat),
                       ),
-                      selected: isSelected,
-                      onSelected: (selected) => _toggleCategory(cat),
-                    )
-                  );
-                }).toList(),
-              ),
+                    );
+                  }).toList(),
+                ),
               ),
             ),
 
@@ -654,40 +572,26 @@ Widget _buildModernInfoCard(IconData icon, String label, String value) {
     customIcons["Other"] = await _createCircleMarker("assets/icons/other.png");
   }
 
-  Widget _buildImage(String path) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: Image.network(
-          "${MyConfig.myurl}/$path",
-          height: 150,
-          width: double.infinity,
-          fit: BoxFit.cover,
-        ),
-      ),
-    );
+  void _toggleCategory(String category) {
+    setState(() {
+      if (category == "All") {
+        selectedCategories = {"All"};
+      } else {
+        selectedCategories.remove("All");
+
+        if (selectedCategories.contains(category)) {
+          selectedCategories.remove(category);
+        } else {
+          selectedCategories.add(category);
+        }
+
+        if (selectedCategories.isEmpty) {
+          selectedCategories.add("All");
+        }
+      }
+    });
+
+    _loadIssuesFromAPI();
   }
 
-  void _toggleCategory(String category) {
-  setState(() {
-    if (category == "All") {
-      selectedCategories = {"All"};
-    } else {
-      selectedCategories.remove("All");
-
-      if (selectedCategories.contains(category)) {
-        selectedCategories.remove(category);
-      } else {
-        selectedCategories.add(category);
-      }
-
-      if (selectedCategories.isEmpty) {
-        selectedCategories.add("All");
-      }
-    }
-  });
-
-  _loadIssuesFromAPI();
-}
 }
