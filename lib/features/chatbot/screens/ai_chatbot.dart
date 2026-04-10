@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
+import '../controllers/chatbot_controller.dart';
 
 class AiChatbot extends StatefulWidget {
   const AiChatbot({super.key});
@@ -8,105 +10,226 @@ class AiChatbot extends StatefulWidget {
 }
 
 class _AiChatbotState extends State<AiChatbot> {
-  final TextEditingController _controller = TextEditingController();
-  
-  // List to hold the chat history
-  final List<Map<String, String>> _messages = [
-  {"sender": "ai", "text": "Hello! I am your FMR assistant. How can I help you today?"},
-  {"sender": "user", "text": "How do I report a pothole?"},
-  {"sender": "ai", "text": "You can use the 'Add Report' card on your Home Page. Remember to upload at least one photo!"},
-  {
-      "sender": "user", 
-      "text": "How do I see my nearby issues?"
-    },
-    {
-      "sender": "ai", 
-      "text": "On the Home Page, you will see a 'Nearby Reported Issues' preview. Tap 'Show All' to see the full list."
-    },
-];
+  bool _showSuggestions = true;
+  final List<String> _allFaqs = [
+    "How to report a road issue?",
+    "How to track my report status?",
+    "What categories of issues can I report?",
+    "How long does it take for action?",
+    "How to change my profile details?",
+    "Is my report anonymous?",
+    "How to upload a photo of the issue?",
+    "Why my report is rejected?",
+  ];
 
-  void _handleSend() {
-    if (_controller.text.isEmpty) return;
+  List<String> _randomFaqs = [];
+  final TextEditingController _controller = TextEditingController();
+  final List<Map<String, String>> _messages = [
+    {
+      "sender": "ai",
+      "text": "Hello! I am your **FMR assistant**. How can I help you today?"
+    }
+  ];
+
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRandomFaqs();
+  }
+
+  void _sendMessage(String text) async {
+    if (text.trim().isEmpty) return;
 
     setState(() {
-      // Add User Message
-      _messages.add({"sender": "user", "text": _controller.text});
-      
-      // Simulate AI Response (Placeholder Text)
+      _messages.add({"sender": "user", "text": text});
+      _isLoading = true;
+      _showSuggestions = false;
+    });
+
+    final response = await ChatbotController.sendMessage(
+      message: text,
+      userId: 1,
+    );
+
+    setState(() {
       _messages.add({
-        "sender": "ai", 
-        "text": "I am processing your question regarding: '${_controller.text}'. Please ensure your question is system-related."
+        "sender": "ai",
+        "text": response["reply"] ?? "No response"
       });
-      
-      _controller.clear();
+      _isLoading = false;
+    });
+  }
+
+  void _handleSend() {
+    final text = _controller.text;
+    _controller.clear();
+    _sendMessage(text);
+  }
+
+  void _loadRandomFaqs() {
+    setState(() {
+      _allFaqs.shuffle();
+      _randomFaqs = _allFaqs.take(4).toList();
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text("AI Assistant"),
-        backgroundColor: const Color.fromARGB(255, 207, 147, 237),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+        elevation: 0,
+        centerTitle: true,
+        title: const Text(
+          "FMR Support",
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+        ),
+        backgroundColor: const Color(0xFF9B67BE), // Deepened the purple for better contrast
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
         ),
       ),
       body: Column(
         children: [
-          // 1. Chat History Area (Dynamic)
           Expanded(
             child: ListView.builder(
-              padding: EdgeInsets.all(16.0),
-              itemCount: _messages.length,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+              itemCount: _messages.length + (_isLoading ? 1 : 0),
               itemBuilder: (context, index) {
+                if (_isLoading && index == _messages.length) {
+                  return _buildLoadingIndicator();
+                }
+
                 bool isUser = _messages[index]["sender"] == "user";
-                return Align(
-                  alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
-                  child: Container(
-                    margin: EdgeInsets.symmetric(vertical: 5),
-                    padding: EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: isUser ? const Color.fromARGB(255, 192, 227, 234) : Colors.grey[200],
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: Text(
-                      _messages[index]["text"]!,
-                      style: TextStyle(color: Colors.black87),
-                    ),
-                  ),
-                );
+                return _buildChatBubble(_messages[index]["text"]!, isUser);
               },
             ),
           ),
-          
-          // 2. Input Bar & 3. Send Button
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    decoration: InputDecoration(
-                      hintText: "Ask a system-related question...",
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(25),
-                      ),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 20),
-                    ),
-                  ),
+          if (_showSuggestions) _buildSuggestions(),
+          _buildInputArea(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChatBubble(String text, bool isUser) {
+    return Align(
+      alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: isUser ? const Color(0xFFE3D2F3) : const Color(0xFFF1F1F1),
+          borderRadius: BorderRadius.only(
+            topLeft: const Radius.circular(16),
+            topRight: const Radius.circular(16),
+            bottomLeft: Radius.circular(isUser ? 16 : 0),
+            bottomRight: Radius.circular(isUser ? 0 : 16),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 5,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: MarkdownBody(
+          data: text,
+          styleSheet: MarkdownStyleSheet(
+            p: TextStyle(color: isUser ? const Color(0xFF4A148C) : Colors.black87, fontSize: 15),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoadingIndicator() {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF1F1F1),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: const Text(
+          "Typing...",
+          style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSuggestions() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text("Common Questions:", 
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey, fontSize: 12)),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 0,
+            children: _randomFaqs.map((faq) {
+              return ActionChip(
+                label: Text(faq, style: const TextStyle(fontSize: 12)),
+                backgroundColor: const Color(0xFFF8EFFF),
+                side: const BorderSide(color: Color(0xFFD1B2E8)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                onPressed: () {
+                  _sendMessage(faq);
+                  setState(() => _showSuggestions = false);
+                },
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInputArea() {
+    return Container(
+      padding: const EdgeInsets.only(left: 16, right: 16, bottom: 25, top: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -2))
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                color: const Color(0xFFF5F5F5),
+                borderRadius: BorderRadius.circular(30),
+              ),
+              child: TextField(
+                controller: _controller,
+                decoration: const InputDecoration(
+                  hintText: "Ask about app or road issues...",
+                  hintStyle: TextStyle(fontSize: 14, color: Colors.grey),
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 ),
-                SizedBox(width: 8),
-                CircleAvatar(
-                  backgroundColor: Colors.deepPurple[400],
-                  child: IconButton(
-                    icon: Icon(Icons.send, color: Colors.white),
-                    onPressed: _handleSend,
-                  ),
-                ),
-              ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          GestureDetector(
+            onTap: _handleSend,
+            child: const CircleAvatar(
+              radius: 24,
+              backgroundColor: Color(0xFF9B67BE),
+              child: Icon(Icons.send_rounded, color: Colors.white, size: 20),
             ),
           ),
         ],
