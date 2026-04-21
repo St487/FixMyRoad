@@ -27,21 +27,21 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 // ============================
 // CHECK VERIFICATION CODE
 // ============================
-// $stmt = $conn->prepare("
-//     SELECT id FROM verification_codes 
-//     WHERE email = ? AND code = ? AND expires_at > NOW()
-// ");
-// $stmt->bind_param("ss", $email, $verification_code);
-// $stmt->execute();
-// $result = $stmt->get_result();
+$stmt = $conn->prepare("
+    SELECT id FROM verification_codes 
+    WHERE email = ? AND code = ? AND expires_at > NOW()
+");
+$stmt->bind_param("ss", $email, $verification_code);
+$stmt->execute();
+$result = $stmt->get_result();
 
-// if ($result->num_rows === 0) {
-//     echo json_encode([
-//         'status' => 'error',
-//         'message' => 'Invalid or expired verification code'
-//     ]);
-//     exit;
-// }
+if ($result->num_rows === 0) {
+    echo json_encode([
+        'status' => 'error',
+        'message' => 'Invalid or expired verification code'
+    ]);
+    exit;
+}
 
 // ============================
 // CHECK EMAIL EXIST

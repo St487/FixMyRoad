@@ -63,12 +63,12 @@ try {
     $mail->isSMTP();
     $mail->Host = 'smtp.gmail.com';
     $mail->SMTPAuth = true;
-    $mail->Username = 'fixmyroad.app.noreply@gmail.com';
-    $mail->Password = 'aned ubet uujd ejuf'; // app password
+    $mail->Username = 'your@gmail.com';
+    $mail->Password = 'Your app password'; // app password
     $mail->SMTPSecure = 'tls';
     $mail->Port = 587;
 
-    $mail->setFrom('fixmyroad.app.noreply@gmail.com', 'Fix My Road');
+    $mail->setFrom('your@gmail.com', 'Fix My Road');
     $mail->addAddress($email);
 
     $mail->isHTML(true);

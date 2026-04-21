@@ -83,22 +83,18 @@ $stmt->execute();
 $mail = new PHPMailer(true);
 
 try {
-    // SMTP CONFIG
     $mail->isSMTP();
     $mail->Host       = 'smtp.gmail.com';
     $mail->SMTPAuth   = true;
 
-    // 🔥 YOUR GMAIL
-    $mail->Username   = 'fixmyroad.app.noreply@gmail.com';
+    $mail->Username   = 'your@gmail.com';
 
-    // 🔥 YOUR APP PASSWORD (NOT normal password)
-    $mail->Password   = 'aned ubet uujd ejuf';
+    $mail->Password   = 'Your app password';
 
     $mail->SMTPSecure = 'tls';
     $mail->Port       = 587;
 
-    // EMAIL DETAILS
-    $mail->setFrom('fixmyroad.app.noreply@gmail.com', 'Fix My Road');
+    $mail->setFrom('your@gmail.com', 'Fix My Road');
     $mail->addAddress($email);
 
     $mail->isHTML(true);
