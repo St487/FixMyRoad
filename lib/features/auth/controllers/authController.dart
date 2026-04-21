@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:fix_my_road/utils/myconfig.dart';
@@ -6,6 +7,25 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthController extends ChangeNotifier {
+  int countdown = 0;
+  Timer? timer;
+
+  void startCountdown() {
+    timer?.cancel(); // prevent duplicate timers
+
+    countdown = 60; // 🔥 change to 60 seconds
+    notifyListeners();
+
+    timer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (countdown == 0) {
+        t.cancel();
+      } else {
+        countdown--;
+        notifyListeners();
+      }
+    });
+  }
+
   final String baseUrl = MyConfig.myurl; 
   TextEditingController loginEmail = TextEditingController();
   TextEditingController loginPassword = TextEditingController();
@@ -23,6 +43,7 @@ class AuthController extends ChangeNotifier {
   TextEditingController address = TextEditingController();
   TextEditingController postalCode = TextEditingController();
   bool isEnglish = true;
+  bool mockVerification = true; // set false in production
   String? state;
   String? city;
 
@@ -104,7 +125,9 @@ class AuthController extends ChangeNotifier {
       notifyListeners();
       return {
         "success": false,
-        "message": data['message'] ?? isEnglish ? "Wrong Email or Password" : "Emel atau Kata Laluan Salah",
+        "message": data['message'] ?? (isEnglish 
+          ? "Wrong Email or Password" 
+          : "Emel atau Kata Laluan Salah"),
       };
     } catch (e) {
       isLoading = false;
@@ -121,34 +144,60 @@ class AuthController extends ChangeNotifier {
   //         REGISTER
   //============================
   Future<Map<String, dynamic>> register() async {
+    isLoading = true;
     if (registerEmail.text.isEmpty ||
         verificationCode.text.isEmpty ||
         phone.text.isEmpty ||
         password.text.isEmpty ||
         confirmPassword.text.isEmpty) {
+      isLoading = false;
       return {"status": "error", "message": isEnglish ? "Please fill in all fields" : "Sila isi semua ruang kosong",};
     }  
 
     if (!RegExp(r'^(?:\+60|0)1[0-9]\d{7,8}$').hasMatch(phone.text)) {
+      isLoading = false;
       return {"status": "error", "message": isEnglish ? "Please enter a valid phone number" : "Sila masukkan nombor telefon yang sah"};
     }
 
     String emailPattern = r'^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$';
     RegExp regExp = RegExp(emailPattern);
     if (!regExp.hasMatch(registerEmail.text)) {
+      isLoading = false;
       return {"status": "error", "message": isEnglish ? "Please enter a valid email" : "Sila masukkan emel yang sah"};
     }
     
     if (!RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$').hasMatch(password.text)) {
+      isLoading = false;
       return {"status": "error", "message": isEnglish ? "Please enter a valid password" : "Sila masukkan kata laluan yang sah"};
     }
 
     if (password.text != confirmPassword.text) {
+      isLoading = false;
       return {"status": "error", "message": isEnglish ? "Password do not match" : "Kata laluan tidak sepadan"};
     }
 
-    if (!RegExp(r'^\d{4}$').hasMatch(verificationCode.text)) {
-      return {"status": "error", "message": isEnglish ? "Incorrect verification code" : "Kod pengesahan salah"};
+    // if (!RegExp(r'^\d{4}$').hasMatch(verificationCode.text)) {
+    //   return {"status": "error", "message": isEnglish ? "Incorrect verification code" : "Kod pengesahan salah"};
+    // }
+
+    final code = verificationCode.text.trim();
+
+    if (!mockVerification) {
+      if (!RegExp(r'^\d{4}$').hasMatch(code)) {
+        return {
+          "status": "error",
+          "message": isEnglish ? "Incorrect verification code" : "Kod pengesahan salah"
+        };
+      }
+    } else {
+      if (code != "1234") {
+        return {
+          "status": "error",
+          "message": isEnglish
+              ? "Incorrect verification code (Mock: 1234)"
+              : "Kod salah (Mock: 1234)"
+        };
+      }
     }
 
     try {
@@ -165,14 +214,51 @@ class AuthController extends ChangeNotifier {
 
       final data = json.decode(response.body);
 
+      isLoading = false;
+
       if (data['status'] == 'success') {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setInt("user_id", data['user_id']);
-    }
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setInt("user_id", data['user_id']);
+      }
 
     return data;
     } catch (e) {
+      isLoading = false;
       return {"status": "error", "message": isEnglish ? "Something went wrong. Please try again later" : 'Sila cuba sebentar lagi'};
+    }
+  }
+
+  Future<Map<String, dynamic>> sendVerificationCode() async {
+    isLoading = true;
+    if (registerEmail.text.isEmpty) {
+      isLoading = false;
+      return {
+        "status": "error",
+        "message": isEnglish ? "Enter email first" : "Sila masukkan emel dahulu"
+      };
+    }
+
+    try {
+      final response = await http.post(
+        Uri.parse("$baseUrl/send_code.php"),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          "email": registerEmail.text.trim(),
+        }),
+      );
+
+      isLoading = false;
+
+      final data = json.decode(response.body);
+      return data;
+    } catch (e) {
+      isLoading = false;
+      return {
+        "status": "error",
+        "message": isEnglish
+            ? "Failed to send code"
+            : "Gagal menghantar kod"
+      };
     }
   }
 
@@ -192,16 +278,19 @@ class AuthController extends ChangeNotifier {
   }
 
   Future<Map<String, dynamic>> completeProfile() async {
+    isLoading = true;
   if (firstName.text.isEmpty ||
       lastName.text.isEmpty ||
       address.text.isEmpty ||
       postalCode.text.isEmpty ||
       state == null ||
       city == null) {
+    isLoading = false;
     return {"status": "error", "message": isEnglish ? "Please fill in all fields" : "Sila isi semua ruang kosong"};
   }
 
   if (!RegExp(r'^\d{5}$').hasMatch(postalCode.text)) {
+    isLoading = false;
     return {"status": "error", "message": isEnglish ? "Please enter a valid postal code" : "Sila masukkan poskod yang sah"};
   }
 
@@ -226,11 +315,12 @@ class AuthController extends ChangeNotifier {
         "city": city,
       }),
     );
-
+    isLoading = false;
     final data = json.decode(response.body);
 
     return data;
   } catch (e) {
+    isLoading = false;
     return {"status": "error", "message": isEnglish ? 'Something went wrong. Please try again later' : 'Sila cuba sebentar lagi'};
   }
 }

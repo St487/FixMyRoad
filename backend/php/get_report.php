@@ -29,7 +29,9 @@ if ($result->num_rows > 0) {
             "description" => $row['description'],
             "location" => $row['location_text'],
             "status" => $row['status'],
+            "created_at" => $row['created_at'],
             "date" => date("M d, Y", strtotime($row['created_at'])),
+
             "photos" => [
                 $row['photo1'] ?? "",
                 $row['photo2'] ?? "",

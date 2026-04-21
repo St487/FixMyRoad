@@ -1,6 +1,8 @@
 import 'package:fix_my_road/features/auth/screens/splashscreen.dart';
 import 'package:fix_my_road/features/home/controllers/detailController.dart';
 import 'package:fix_my_road/features/home/controllers/homeController.dart';
+import 'package:fix_my_road/features/password/controllers/passwordController.dart';
+import 'package:fix_my_road/features/profile/controllers/changePasswordController.dart';
 import 'package:fix_my_road/features/profile/controllers/profileController.dart';
 import 'package:fix_my_road/features/report/controllers/reportController.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +20,8 @@ void main() {
         ChangeNotifierProvider(create: (_) => ReportController()),
         ChangeNotifierProvider(create: (_) => HomeController()),
         ChangeNotifierProvider(create: (_) => DetailController(issueId: 0)),
+        ChangeNotifierProvider(create: (_) => Changepasswordcontroller()),
+        ChangeNotifierProvider(create: (_) => PasswordController()),
       ],
       child: const MyApp(),
     ),

@@ -42,7 +42,9 @@ class _CompleteProfileState extends State<CompleteProfile> {
     final screenHeight = MediaQuery.of(context).size.height;
     final languageProvider = context.watch<LanguageProvider>();
     final lang = languageProvider.isEnglish;
-    return Scaffold(
+    return WillPopScope(
+      onWillPop: () async => false, // 🚫 blocks back button
+      child: Scaffold(
       body: Container(
         width: double.infinity,
         height: double.infinity,
@@ -60,22 +62,7 @@ class _CompleteProfileState extends State<CompleteProfile> {
         ),
         child: Column(
           children: [
-            Align(
-              alignment: Alignment.topLeft,
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.pop(context);
-                },
-                child: const Padding(
-                  padding: EdgeInsets.only(top: 20.0, left: 20.0),
-                  child: Icon(
-                    Icons.arrow_back,
-                    color: Colors.white,
-                    size: 30,
-                  ),
-                ),
-              ),
-            ),
+            
             SizedBox(height: 20),
             Expanded(
               child: Align(
@@ -291,6 +278,7 @@ class _CompleteProfileState extends State<CompleteProfile> {
                           // Done Button
                           AnimatedButton(
                             width: 250,
+                            isLoading: auth.isLoading,
                             onPressed: () async {
                               final result = await context.read<AuthController>().completeProfile();
                               if (!mounted) return;
@@ -332,8 +320,9 @@ class _CompleteProfileState extends State<CompleteProfile> {
               )
             ),
           ],
-        ),
+        ), 
       ),
+      )
     );
   }
 }

@@ -165,6 +165,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 15),
                   AnimatedButton(
                     width: 250,
+                    isLoading: auth.isLoading,
                     onPressed: () async {
                       final result = await context.read<AuthController>().login();
 

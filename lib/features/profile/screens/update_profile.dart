@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:fix_my_road/features/auth/service/location_service.dart';
 import 'package:fix_my_road/features/profile/controllers/profileController.dart';
 import 'package:fix_my_road/provider/language_provider.dart';
+import 'package:fix_my_road/shared/support_widget/confirm_dialog.dart';
 import 'package:fix_my_road/shared/support_widget/snack_bar.dart';
 import 'package:fix_my_road/utils/app_text.dart';
 import 'package:fix_my_road/utils/cameraPermission.dart';
@@ -323,6 +324,16 @@ Future<void> _loadProfileDefaults() async {
         onPressed: () async {
           final auth = context.read<ProfileController>();
 
+          final confirm = await ConfirmDialog.show(
+            context: context,
+            title: AppText.save(lang),
+            message: AppText.confirmSave(lang),
+            cancelText: AppText.cancel(lang),
+            confirmText: AppText.save(lang),
+          );
+
+          if (confirm != true) return;
+
           final result = await auth.updateProfile(
             firstName: firstNameController.text,
             lastName: lastNameController.text,
@@ -346,6 +357,7 @@ Future<void> _loadProfileDefaults() async {
               Colors.greenAccent,
               Colors.white,
             );
+            Navigator.pop(context);
           } else {
             CustomSnackbar.show(
               context,

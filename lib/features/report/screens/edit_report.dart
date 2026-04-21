@@ -3,6 +3,8 @@
 import 'package:fix_my_road/features/map/screens/map_picker_page.dart';
 import 'package:fix_my_road/features/report/controllers/reportController.dart';
 import 'package:fix_my_road/provider/language_provider.dart';
+import 'package:fix_my_road/shared/support_widget/confirm_dialog.dart';
+import 'package:fix_my_road/shared/support_widget/primary_button.dart';
 import 'package:fix_my_road/shared/support_widget/snack_bar.dart';
 import 'package:fix_my_road/utils/app_text.dart';
 import 'package:fix_my_road/utils/cameraPermission.dart';
@@ -23,6 +25,8 @@ class EditReport extends StatefulWidget {
 }
 
 class _EditReportState extends State<EditReport> {
+  final Color primaryPurple = Colors.deepPurple;
+  final Color secondaryPurple = const Color(0xFF9575CD);
   late TextEditingController titleController;
   late TextEditingController descriptionController;
   late TextEditingController locationController;
@@ -374,18 +378,22 @@ class _EditReportState extends State<EditReport> {
               const SizedBox(height: 30),
 
               // UPDATE BUTTON
-              SizedBox(
-                width: double.infinity,
-                height: 55,
-                child: ElevatedButton(
-                  onPressed: () => _handleUpdate(lang, reportController),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: kPrimary,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                    elevation: 0,
-                  ),
-                  child: const Text("Update Report", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
-                ),
+              PrimaryButton(
+                text: AppText.updateReport(lang),
+                isLoading: reportController.isSubmitting,
+                onPressed: () async {
+                  final confirm = await ConfirmDialog.show(
+                  context: context,
+                  title: AppText.updateReport(lang),
+                  message: AppText.confirmUpdateReport(lang),
+                  cancelText: AppText.cancel(lang),
+                  confirmText: AppText.yes(lang),
+                );
+
+                if (confirm != true) return;
+
+                  await _handleUpdate(lang, reportController);
+                  },
               ),
             ],
           ),

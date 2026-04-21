@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:fix_my_road/utils/myconfig.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class IssueDetailPage extends StatelessWidget {
   final int issueId;
@@ -224,8 +225,9 @@ class _IssueDetailView extends StatelessWidget {
                     ),
                     child: InkWell(
                       borderRadius: BorderRadius.circular(30),
-                      onTap: () {
-                        // TODO: navigation
+                      onTap: () async {
+                        final url = Uri.parse("https://www.google.com/maps/dir/?api=1&destination=${issue['latitude']},${issue['longitude']}");
+                        if (await canLaunchUrl(url)) await launchUrl(url);
                       },
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 8),

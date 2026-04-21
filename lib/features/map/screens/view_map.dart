@@ -28,6 +28,29 @@ class _ViewMapState extends State<ViewMap> {
 
   Set<Marker> _markers = {};
 
+  void _showFullImage(String imageUrl) {
+    showDialog(
+      context: context,
+      barrierDismissible: true, // tap outside closes
+      builder: (_) {
+        return GestureDetector(
+          onTap: () => Navigator.pop(context), // tap anywhere to close
+          child: Container(
+            color: Colors.black.withOpacity(0.9),
+            child: Center(
+              child: InteractiveViewer(
+                panEnabled: true,
+                minScale: 0.8,
+                maxScale: 4,
+                child: Image.network(imageUrl),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Map<String, Map<String, String>> statusMapping = {
     "in_progress": {"en": "In Progress", "ms": "Dalam Proses"},
     "approved": {"en": "Reported", "ms": "Dilaporkan"},
@@ -87,7 +110,11 @@ class _ViewMapState extends State<ViewMap> {
 
   Future<void> _init() async {
     await _loadIcons();
+    if (!mounted) return;
+
     await _initializeMapFlow();
+    if (!mounted) return;
+
     await _loadIssuesFromAPI();
   }
 
@@ -110,9 +137,10 @@ class _ViewMapState extends State<ViewMap> {
       return;
     }
 
-    setState(() {
-      _isCheckingPermissions = false;
-    });
+    if (!mounted) return;
+      setState(() {
+        _isCheckingPermissions = false;
+      });
   }
 
   Future<void> _loadIssuesFromAPI() async {
@@ -138,7 +166,8 @@ class _ViewMapState extends State<ViewMap> {
         }).toSet();
       });
 
-      setState(() => _markers = markers);
+      if (!mounted) return;
+        setState(() => _markers = markers);
     } catch (e) {
       print(e);
     }
@@ -151,6 +180,7 @@ class _ViewMapState extends State<ViewMap> {
     LatLng position = LatLng(issue['latitude'], issue['longitude']);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       showModalBottomSheet(
         context: context,
         isScrollControlled: true,
@@ -195,16 +225,34 @@ class _ViewMapState extends State<ViewMap> {
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(issue['title'], style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                      Expanded(
+                        child: Text(
+                          issue['title'],
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
                           color: statusColor.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Text(displayStatus.toUpperCase(), style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 11)),
+                        child: Text(
+                          displayStatus.toUpperCase(),
+                          style: TextStyle(
+                            color: statusColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 11,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -257,14 +305,59 @@ class _ViewMapState extends State<ViewMap> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF7864C8), foregroundColor: Colors.white, minimumSize: const Size(double.infinity, 56), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)), elevation: 0),
-                    icon: const Icon(Icons.directions_outlined),
-                    label: Text(isEnglish ? "Open In Google Map" : "Buka Dalam Peta Google", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                    onPressed: () async {
-                      final url = Uri.parse("https://www.google.com/maps/dir/?api=1&destination=${issue['latitude']},${issue['longitude']}");
-                      if (await canLaunchUrl(url)) await launchUrl(url);
-                    },
+                  Container(
+                    height: 60,
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Material(
+                      borderRadius: BorderRadius.circular(30),
+                      elevation: 8,
+                      shadowColor: const Color(0xFF7864C8).withOpacity(0.5),
+                      child: Ink(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(30),
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF7864C8), Color(0xFF9C8CF0)],
+                          ),
+                        ),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(30),
+                          onTap: () async {
+                            final url = Uri.parse("https://www.google.com/maps/dir/?api=1&destination=${issue['latitude']},${issue['longitude']}");
+                            if (await canLaunchUrl(url)) await launchUrl(url);
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 8),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(Icons.navigation_rounded, color: Colors.white, size: 20),
+                                    const SizedBox(width: 10), 
+                                    Text(
+                                      isEnglish ? "Navigate to Location" : "Navigasi ke Lokasi",
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Text(
+                                  isEnglish ? "Open in Maps" : "Buka dalam Peta",
+                                  style: const TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 20),
                 ],
@@ -289,21 +382,27 @@ class _ViewMapState extends State<ViewMap> {
 
   Widget _buildEnhancedImage(String path) {
     String imageUrl = "${MyConfig.myurl}/$path";
-    return Container(
-      margin: const EdgeInsets.only(right: 15),
-      width: 200,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Image.network(
-          imageUrl,
-          fit: BoxFit.cover,
-          loadingBuilder: (context, child, progress) {
-            if (progress == null) return child;
-            return Center(child: CircularProgressIndicator());
-          },
-          errorBuilder: (_, __, ___) => Container(
-            color: Colors.grey[200],
-            child: const Icon(Icons.image_not_supported_outlined),
+
+    return GestureDetector(
+      onTap: () {
+        _showFullImage(imageUrl);
+      },
+      child: Container(
+        margin: const EdgeInsets.only(right: 15),
+        width: 200,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Image.network(
+            imageUrl,
+            fit: BoxFit.cover,
+            loadingBuilder: (context, child, progress) {
+              if (progress == null) return child;
+              return const Center(child: CircularProgressIndicator());
+            },
+            errorBuilder: (_, __, ___) => Container(
+              color: Colors.grey[200],
+              child: const Icon(Icons.image_not_supported_outlined),
+            ),
           ),
         ),
       ),
@@ -344,6 +443,7 @@ class _ViewMapState extends State<ViewMap> {
       print(e);
     }
 
+    if (!mounted) return;
     setState(() {
       _isMapRendering = false;
     });

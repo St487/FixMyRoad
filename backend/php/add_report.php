@@ -54,6 +54,7 @@ if (!$photos['photo1']) {
     exit;
 }
 
+
 // Insert into database
 $stmt = $conn->prepare("INSERT INTO report (user_id, updated_by, issue_type, title, description, location_text, latitude, longitude, photo1, photo2, photo3, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending', NOW(), NOW())");
 if (!$stmt) {

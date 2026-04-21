@@ -51,12 +51,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->bind_param("ssssssssi", $first_name, $last_name, $email, $phone, $address, $postal_code, $state, $city, $user_id);
     }
 
-    $stmt->execute();
-
-    if ($stmt->affected_rows > 0) {
+    if ($stmt->execute()) {
         echo json_encode([
             "status" => "success",
-            "message" => "Profile updated successfully",
+            "message" => $stmt->affected_rows > 0 
+                ? "Profile updated successfully"
+                : "No changes made",
             "first_name" => $first_name,
             "last_name" => $last_name,
             "email" => $email,

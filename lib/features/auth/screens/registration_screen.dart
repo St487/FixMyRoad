@@ -134,11 +134,35 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                             suffixIcon: Padding(
                               padding: const EdgeInsets.only(right: 8.0),
                               child: TextButton(
-                                onPressed: () {
-                                  // Send code action
-                                },
+                                onPressed: auth.countdown > 0
+                                  ? null
+                                  : () async {
+                                      final result = await context.read<AuthController>().sendVerificationCode();
+
+                                      if (!mounted) return;
+
+                                      if (result['status'] == 'success') {
+                                        context.read<AuthController>().startCountdown(); 
+
+                                        CustomSnackbar.show(
+                                          context,
+                                          AppText.verificationCodeSent(lang),
+                                          Colors.green,
+                                          Colors.white,
+                                        );
+                                      } else {
+                                        CustomSnackbar.show(
+                                          context,
+                                          result['message'],
+                                          Colors.red,
+                                          Colors.white,
+                                        );
+                                      }
+                                    },
                                 child: Text(
-                                  AppText.verificationButton(lang),
+                                auth.countdown > 0
+                                    ? "${auth.countdown}s"
+                                    : AppText.verificationButton(lang),
                                   style: TextStyle(
                                     color: Colors.purple,
                                     fontWeight: FontWeight.bold,
@@ -244,6 +268,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         SizedBox(height: 10),
                         AnimatedButton(
                           width: 250,
+                          isLoading: auth.isLoading,
                           onPressed: () async {
                             final result = await context.read<AuthController>().register();
                             if (!mounted) return;

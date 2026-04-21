@@ -1,6 +1,8 @@
 import 'package:fix_my_road/features/map/screens/map_picker_page.dart';
 import 'package:fix_my_road/features/report/controllers/reportController.dart';
 import 'package:fix_my_road/provider/language_provider.dart';
+import 'package:fix_my_road/shared/support_widget/confirm_dialog.dart';
+import 'package:fix_my_road/shared/support_widget/primary_button.dart';
 import 'package:fix_my_road/shared/support_widget/snack_bar.dart';
 import 'package:fix_my_road/utils/app_text.dart';
 import 'package:fix_my_road/utils/cameraPermission.dart';
@@ -19,6 +21,8 @@ class AddReport extends StatefulWidget {
 }
 
 class _AddReportState extends State<AddReport> {
+  final Color primaryPurple = Colors.deepPurple;
+  final Color secondaryPurple = const Color(0xFF9575CD);
   GoogleMapController? _mapController;
   String? selectedType;
   final ImagePicker _picker = ImagePicker();
@@ -292,36 +296,45 @@ class _AddReportState extends State<AddReport> {
                 const SizedBox(height: 40),
 
                 // SUBMIT BUTTON
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      final error = report.validateFields();
-                      if (error != null) {
-                        CustomSnackbar.show(context, error, Colors.redAccent, Colors.white);
-                        return;
-                      }
-                      final userId = await _getUserId();
-                      if (userId == null) return;
-                      bool success = await report.submitReport(userId);
-                      if (success) {
-                        CustomSnackbar.show(context, AppText.submitReportSuccess(lang), Colors.green, Colors.white);
-                        report.clearForm();
-                        setState(() => selectedType = null);
-                        Navigator.pop(context);
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: kPrimary,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      elevation: 2,
-                    ),
-                    child: Text(
-                      AppText.submitReport(lang),
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-                    ),
-                  ),
+                PrimaryButton(
+                  text: AppText.submitReport(lang),
+                  isLoading: report.isSubmitting,
+                  onPressed: () async {
+                    final error = report.validateFields();
+                    if (error != null) {
+                      CustomSnackbar.show(context, error, Colors.redAccent, Colors.white);
+                      return;
+                    }
+
+                    final userId = await _getUserId();
+                    if (userId == null) return;
+                    final confirm = await ConfirmDialog.show(
+                      context: context,
+                      title: AppText.submitReport(lang),
+                      message: AppText.confirmSubmit(lang),
+                      cancelText: AppText.cancel(lang),
+                      confirmText: AppText.yes(lang),
+                    );
+
+                    if (confirm != true) {
+                      return;
+                    }
+
+                    bool success = await report.submitReport(userId);
+
+                    if (success) {
+                      CustomSnackbar.show(
+                        context,
+                        AppText.submitReportSuccess(lang),
+                        Colors.green,
+                        Colors.white,
+                      );
+
+                      report.clearForm();
+                      setState(() => selectedType = null);
+                      Navigator.pop(context);
+                    }
+                  },
                 ),
               ],
             ),

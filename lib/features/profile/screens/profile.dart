@@ -2,9 +2,11 @@ import 'dart:io';
 
 import 'package:fix_my_road/features/auth/screens/login_screen.dart';
 import 'package:fix_my_road/features/profile/controllers/profileController.dart';
+import 'package:fix_my_road/features/profile/screens/change_password_step1.dart';
 import 'package:fix_my_road/features/profile/screens/contact.dart';
 import 'package:fix_my_road/features/profile/screens/update_profile.dart';
 import 'package:fix_my_road/provider/language_provider.dart';
+import 'package:fix_my_road/shared/support_widget/confirm_dialog.dart';
 import 'package:fix_my_road/shared/support_widget/snack_bar.dart';
 import 'package:fix_my_road/utils/app_text.dart';
 import 'package:fix_my_road/utils/myconfig.dart';
@@ -65,9 +67,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         child: CircleAvatar(
                           radius: 60,
-                          backgroundImage: auth.profilePicture != null
+                          backgroundImage: (auth.profilePicture != null &&
+                              auth.profilePicture!.isNotEmpty &&
+                              auth.profilePicture != "null")
                           ? NetworkImage("${MyConfig.myurl}/${auth.profilePicture}")
-                          : const AssetImage("assets/images/personIcon.jpg") as ImageProvider,
+                          : const AssetImage("assets/images/personIcon.jpg"),
                         ),
                       ),
                       // Positioned(
@@ -145,6 +149,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       icon: Icons.lock_outline_rounded,
                       title: AppText.changePassword(lang),
                       onTap: () {
+                        Navigator.push(
+                          context,
+                          PageRouteBuilder(
+                            pageBuilder: (context, animation, secondaryAnimation) =>
+                                ChangeNotifierProvider.value(
+                              value: context.read<ProfileController>(),
+                              child: ChangePasswordStep1(),
+                            ),
+                            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                              return FadeTransition(
+                                opacity: animation,
+                                child: child,
+                              );
+                            },
+                            transitionDuration: const Duration(milliseconds: 300),
+                          ),
+                        );
                       },
                     ),
                     _buildProfileOption(
@@ -164,7 +185,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     _buildProfileOption(
                       icon: Icons.logout_rounded,
                       title: AppText.logout(lang),
-                      onTap: () => _handleLogout(context),
+                      onTap: () async { 
+                        final confirm = await ConfirmDialog.show(
+                        context: context,
+                        title: AppText.logout(lang),
+                        message: AppText.confirmLogout(lang),
+                        cancelText: AppText.cancel(lang),
+                        confirmText: AppText.logout(lang),
+                      );
+
+                      if (confirm != true) return;
+
+                      await _handleLogout(context); },
                     ),
                   ],
                 ),

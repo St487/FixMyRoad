@@ -1,5 +1,7 @@
+import 'package:fix_my_road/features/password/controllers/passwordController.dart';
 import 'package:fix_my_road/shared/animation/transition.dart';
 import 'package:fix_my_road/provider/language_provider.dart';
+import 'package:fix_my_road/shared/support_widget/snack_bar.dart';
 import 'package:fix_my_road/utils/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -7,7 +9,9 @@ import 'package:fix_my_road/features/password/screens/reset_password.dart';
 import 'package:provider/provider.dart';
 
 class PasscodeScreen extends StatefulWidget {
-  const PasscodeScreen({super.key});
+  final String email;
+
+  const PasscodeScreen({super.key, required this.email});
 
   @override
   State<PasscodeScreen> createState() => _PasscodeScreenState();
@@ -39,28 +43,33 @@ class _PasscodeScreenState extends State<PasscodeScreen> {
     super.dispose();
   }
 
-  void _onCodeChanged(int index, String value) {
-    if (value.length == 1) {
-      if (index < _focusNodes.length - 1) {
-        _focusNodes[index + 1].requestFocus();
-      } else {
-        // Last field: check if all filled then navigate
-        if (_controllers.every((c) => c.text.length == 1)) {
-          TransitionButton.navigateWithSlide(context, const ResetPassword());
-        }
-      }
-    } else if (value.isEmpty) {
-      if (index > 0) {
-        _focusNodes[index - 1].requestFocus();
-      }
+  Future<void> _onCodeChanged(int index, String value) async {
+    if (value.isNotEmpty && index < 3) {
+      _focusNodes[index + 1].requestFocus();
+    }
+
+    if (value.isEmpty && index > 0) {
+      _focusNodes[index - 1].requestFocus();
+    }
+
+    // ONLY UI LOGIC HERE
+    if (_controllers.every((c) => c.text.isNotEmpty)) {
+      _verifyCode();
     }
   }
+
   @override
   Widget build(BuildContext context) {
+    final controller = context.watch<PasswordController>();
     final screenWidth = MediaQuery.of(context).size.width;
     double containerWidth = screenWidth > 600 ? 500 : screenWidth * 0.9;
 
-    final lang = context.watch<LanguageProvider>();
+    final languageProvider = context.watch<LanguageProvider>();
+    final lang = languageProvider.isEnglish;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.setLanguage(lang); 
+    });
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -103,12 +112,12 @@ class _PasscodeScreenState extends State<PasscodeScreen> {
                         Image.asset('assets/images/passcode.png', height: 150),
                         SizedBox(height: 20),
                         Text(
-                          AppText.enterPasscode(lang.isEnglish),
+                          AppText.enterPasscode(lang),
                           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          AppText.enterPasscodeDesc(lang.isEnglish),
+                          AppText.enterPasscodeDesc(lang),
                           textAlign: TextAlign.center,
                           style: TextStyle(fontSize: 16),
                         ),
@@ -139,20 +148,44 @@ class _PasscodeScreenState extends State<PasscodeScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              AppText.didntReceiveCode(lang.isEnglish),
+                              AppText.didntReceiveCode(lang),
                               textAlign: TextAlign.center,
                               style: TextStyle(fontSize: 16),
                             ),
                             TextButton(
-                              onPressed: (){
-                                // Resend code logic here
-                              }, 
+                              onPressed: controller.resendCountdown == 0
+                                  ? () async {
+                                      final result = await controller.resendCode(widget.email);
+
+                                      if (result['status'] == 'success') {
+                                        controller.startResendTimer();
+
+                                        CustomSnackbar.show(
+                                          context,
+                                          result['message'],
+                                          Colors.green,
+                                          Colors.white,
+                                        );
+                                      } else {
+                                        CustomSnackbar.show(
+                                          context,
+                                          result['message'] ?? 'Failed',
+                                          Colors.redAccent,
+                                          Colors.white,
+                                        );
+                                      }
+                                    }
+                                  : null,
                               child: Text(
-                                AppText.resend(lang.isEnglish),
+                                controller.resendCountdown == 0
+                                    ? AppText.resend(lang)
+                                    : "Resend in ${controller.resendCountdown}s",
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
-                                  color: Color.fromARGB(255, 62, 129, 212),
+                                  color: controller.resendCountdown == 0
+                                      ? const Color.fromARGB(255, 62, 129, 212)
+                                      : Colors.grey,
                                 ),
                               ),
                             ),
@@ -167,5 +200,29 @@ class _PasscodeScreenState extends State<PasscodeScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _verifyCode() async {
+    final controller = context.read<PasswordController>(); // IMPORTANT
+
+    String code = _controllers.map((e) => e.text).join();
+
+    final result = await controller.verifyCode(widget.email, code);
+
+    if (!mounted) return;
+
+    if (result['status'] == 'success') {
+      TransitionButton.navigateWithSlide(
+        context,
+        ResetPassword(email: widget.email),
+      );
+    } else {
+      CustomSnackbar.show(
+        context,
+        result['message'] ?? 'Invalid code',
+        Colors.redAccent,
+        Colors.white,
+      );
+    }
   }
 }

@@ -1,5 +1,3 @@
-import 'package:fix_my_road/features/profile/screens/change_password.dart';
-
 class AppText {
 
   // ===== LOGIN SCREEN =====
@@ -51,6 +49,7 @@ class AppText {
   static String rememberPassword(bool en) => en ? 'Remember password?' : 'Ingat kata laluan?';
   static String loginShort(bool en) => en ? 'Login' : 'Log Masuk';
   static String sendCode(bool en) => en ? 'Send Code' : 'Hantar Kod';
+  static String verificationCodeSent(bool en) => en ? 'Verification code sent to your email!' : 'Kod pengesahan telah dikirim ke email Anda!';
   
   // ===== PASSCODE SCREEN =====
   static String enterPasscode(bool en) => en ? 'Enter Passcode' : 'Masukkan Kod Laluan';
@@ -206,6 +205,7 @@ class AppText {
   static String takePhoto(bool en) => en ? 'Take Photo' : 'Ambil Gambar';
   static String chooseGallery(bool en) => en ? 'Choose from Gallery' : 'Pilih dari Galeri';  
   static String addPhotos(bool en) => en ? 'Add Photos (max 3)' : 'Tambah Foto (maksimum 3)';  
+  static String updateReport(bool en) => en ? 'Update Report' : 'Kemas Kini Laporan';
 
   //======== ERROR AND SUCCESS ========
   static String updateReportSuccess(bool en) => en ? 'Report updated successfully!' : 'Laporan berjaya dikemas kini!';
@@ -258,4 +258,31 @@ class AppText {
   static String selectSource(bool isEnglish) =>
       isEnglish ? "Select Source" : "Pilih Sumber";
 
+
+  // ===== CONFIRMATION DIALOG =====
+  static String confirmSubmit(bool isEnglish) =>
+      isEnglish ? "Are you sure you want to submit this report?" : "Adakah anda pasti ingin menghantar laporan ini?";
+  static String yes(bool isEnglish) =>
+      isEnglish ? "Yes" : "Ya";
+  static String confirmLogout(bool isEnglish) =>
+      isEnglish ? "Are you sure you want to log out?" : "Adakah anda pasti ingin log keluar?";
+  static String confirmUpdateReport(bool isEnglish) =>
+      isEnglish ? "Are you sure you want to update this report?" : "Adakah anda pasti ingin mengemas kini laporan ini?";
+  static String confirmSave(bool isEnglish) =>
+      isEnglish ? "Are you sure you want to save changes to your profile?" : "Adakah anda pasti ingin menyimpan perubahan pada profil anda?";
+  static String confirmChangePassword(bool isEnglish) =>
+      isEnglish ? "Are you sure you want to change your password?" : "Adakah anda pasti ingin mengubah kata laluan anda?";
+
+  // =====  CHANGE PASSWORD =====
+  static String currentPassword(bool en) => en ? 'Current Password' : 'Kata Laluan Lama';
+  static String verify(bool en) => en ? 'Verify' : 'Sahkan';
+  static String verifyIdentity(bool en) => en ? 'Verify Identity' : 'Sahkan Identiti';
+  static String enterCurrentPassword(bool en) => en ? 'Please enter your current password to continue with the change' : 'Sila masukkan kata laluan lama untuk melanjutkan perubahan';
+  static String continueButton(bool en) => en ? 'Continue' : 'Teruskan';
+  static String passwordsDoNotMatch(bool en) => en ? 'Passwords do not match' : 'Kata laluan tidak sama';
+  static String passwordTooShort(bool en) => en ? 'Password is too short' : 'Kata laluan terlalu pendek';
+  static String passwordChangeSuccess(bool en) => en ? 'Password updated successfully!' : 'Kata laluan berhasil diperbarui!';
+  static String updatePassword(bool en) => en ? 'Update Password' : 'Perbarui Kata Laluan';
+  static String newPasswordInstructions(bool en) => en ? 'Your new password must be different from previous used password' : 'Kata laluan baru Anda harus berbeza dari kata laluan yang pernah digunakan sebelumnya';
+  static String createNewPassword(bool en) => en ? 'Create New Password' : 'Buat Kata Laluan Baru';
 }
