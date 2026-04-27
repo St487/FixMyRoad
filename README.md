@@ -1,16 +1,20 @@
-# fix_my_road
+# FIX MY ROAD
 
-A new Flutter project.
+A mobile app that can report road and infrastructure issues. Features for the admin side, can refer at [FMRAdmin](https://github.com/St487/FMRAdmin).  
+This application provide functions:  
+1. Add Report (Which need to provide photos, location and also description)  
+2. AI Chatbot about the road issues and apps guidance  
+3. Map (Can check the reported issues by others)  
+4. Bilingual (Support Eng and Malay)
 
-## Getting Started
+## Screenshots  
+<img src="readme/login.jpeg" width="300"/>  
+<img src="readme/home.jpeg" width="300"/>  
+<img src="readme/issuedetails.jpeg" width="300"/>  
+<img src="readme/aichatbot.jpeg" width="300"/>  
+<img src="readme/map.jpeg" width="300"/>  
+<img src="readme/mapissue.jpeg" width="300"/>  
+<img src="readme/addreport.jpeg" width="300"/>  
+<img src="readme/reportstatus.jpeg" width="300"/>  
+<img src="readme/profile.jpeg" width="300"/>  
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
