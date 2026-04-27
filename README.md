@@ -8,13 +8,25 @@ This application provide functions:
 4. Bilingual (Support Eng and Malay)
 
 ## Screenshots  
+## Screenshots
+
+<p align="center">
+
 <img src="assets/readme/login.jpeg" width="150"/>
 <img src="assets/readme/home.jpeg" width="150"/>
 <img src="assets/readme/issuedetails.jpeg" width="150"/>
+
+<br/>
+
 <img src="assets/readme/aichatbot.jpeg" width="150"/>
 <img src="assets/readme/map.jpeg" width="150"/>
 <img src="assets/readme/mapissue.jpeg" width="150"/>
+
+<br/>
+
 <img src="assets/readme/addreport.jpeg" width="150"/>
 <img src="assets/readme/reportstatus.jpeg" width="150"/>
 <img src="assets/readme/profile.jpeg" width="150"/>
+
+</p>
 
