@@ -8,9 +8,6 @@ This application provide functions:
 4. Bilingual (Support Eng and Malay)
 
 ## Screenshots  
-## Screenshots
-
-<p align="center">
 
 <img src="assets/readme/login.jpeg" width="150"/>
 <img src="assets/readme/home.jpeg" width="150"/>
