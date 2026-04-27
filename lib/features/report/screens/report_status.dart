@@ -3,6 +3,7 @@ import 'package:fix_my_road/features/report/screens/edit_report.dart';
 import 'package:fix_my_road/provider/language_provider.dart';
 import 'package:fix_my_road/utils/app_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -162,6 +163,7 @@ class _ReportStatusState extends State<ReportStatus> {
           IconButton(
             icon: Icon(sortAsc ? Icons.arrow_upward : Icons.arrow_downward),
             onPressed: () {
+              HapticFeedback.lightImpact();
               setState(() {
                 sortAsc = !sortAsc; // toggle sort order
               });
@@ -194,6 +196,7 @@ class _ReportStatusState extends State<ReportStatus> {
                     selected: isSelected,
                     showCheckmark: false,
                     onSelected: (bool value) {
+                      HapticFeedback.lightImpact();
                       setState(() {
                         selectedFilter = filterName;
                       });
@@ -307,6 +310,7 @@ class _ReportStatusState extends State<ReportStatus> {
                           if (isPending)
                             IconButton.filled(
                               onPressed: () async {
+                                HapticFeedback.lightImpact();
                                 final updated = await Navigator.push(
                                   context,
                                   MaterialPageRoute(
@@ -330,7 +334,10 @@ class _ReportStatusState extends State<ReportStatus> {
                             ),
                           const SizedBox(width: 8),
                           ElevatedButton(
-                            onPressed: () => _showReportDetails(context, report),
+                            onPressed: () {
+                              HapticFeedback.lightImpact();
+                              _showReportDetails(context, report);
+                            },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF7864C8),
                               foregroundColor: Colors.white,
@@ -491,7 +498,10 @@ class _ReportStatusState extends State<ReportStatus> {
                               separatorBuilder: (_, __) => const SizedBox(width: 12),
                               itemBuilder: (context, index) {
                                 return GestureDetector(
-                                  onTap: () => _showFullImage(context, photos[index]),
+                                  onTap: () {
+                                    HapticFeedback.lightImpact();
+                                    _showFullImage(context, photos[index]);
+                                  },
                                   child: Hero(
                                     tag: photos[index],
                                     child: Container(
@@ -578,7 +588,10 @@ class _ReportStatusState extends State<ReportStatus> {
         backgroundColor: Colors.black,
         insetPadding: const EdgeInsets.all(10),
         child: GestureDetector(
-          onTap: () => Navigator.pop(context),
+          onTap: () {
+            HapticFeedback.lightImpact();
+            Navigator.pop(context);
+          },
           child: InteractiveViewer(
             child: Image.network(imageUrl),
           ),

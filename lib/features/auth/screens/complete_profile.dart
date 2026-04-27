@@ -8,6 +8,7 @@ import 'package:fix_my_road/features/auth/screens/login_screen.dart';
 import 'package:fix_my_road/shared/support_widget/snack_bar.dart';
 import 'package:fix_my_road/utils/app_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class CompleteProfile extends StatefulWidget {
@@ -280,6 +281,7 @@ class _CompleteProfileState extends State<CompleteProfile> {
                             width: 250,
                             isLoading: auth.isLoading,
                             onPressed: () async {
+                              HapticFeedback.lightImpact();
                               final result = await context.read<AuthController>().completeProfile();
                               if (!mounted) return;
                               if (result['status'] == 'success') {

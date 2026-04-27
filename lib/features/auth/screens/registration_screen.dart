@@ -6,6 +6,7 @@ import 'package:fix_my_road/features/auth/screens/complete_profile.dart';
 import 'package:fix_my_road/shared/support_widget/snack_bar.dart';
 import 'package:fix_my_road/utils/app_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class RegistrationScreen extends StatefulWidget {
@@ -46,6 +47,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               alignment: Alignment.topLeft,
               child: GestureDetector(
                 onTap: () {
+                  HapticFeedback.lightImpact();
                   Navigator.pop(context);
                 },
                 child: const Padding(
@@ -137,6 +139,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                 onPressed: auth.countdown > 0
                                   ? null
                                   : () async {
+                                      HapticFeedback.lightImpact();
+
                                       final result = await context.read<AuthController>().sendVerificationCode();
 
                                       if (!mounted) return;
@@ -252,6 +256,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                             ),
                             TextButton(
                               onPressed: () {
+                                HapticFeedback.lightImpact();
                                 Navigator.pop(context);
                               },
                               child: Text(
@@ -270,6 +275,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           width: 250,
                           isLoading: auth.isLoading,
                           onPressed: () async {
+                            HapticFeedback.lightImpact();
                             final result = await context.read<AuthController>().register();
                             if (!mounted) return;
                             if (result['status'] == 'success') {

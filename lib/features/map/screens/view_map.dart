@@ -34,7 +34,10 @@ class _ViewMapState extends State<ViewMap> {
       barrierDismissible: true, // tap outside closes
       builder: (_) {
         return GestureDetector(
-          onTap: () => Navigator.pop(context), // tap anywhere to close
+          onTap: () {
+            HapticFeedback.lightImpact();
+            Navigator.pop(context);
+          },
           child: Container(
             color: Colors.black.withOpacity(0.9),
             child: Center(
@@ -161,7 +164,10 @@ class _ViewMapState extends State<ViewMap> {
             markerId: MarkerId(issue['id'].toString()),
             position: LatLng(issue['latitude'], issue['longitude']),
             icon: customIcons[mapped] ?? BitmapDescriptor.defaultMarker,
-            onTap: () => _showIssueDetails(issue),
+            onTap: () {
+              HapticFeedback.lightImpact();
+              _showIssueDetails(issue);
+            },
           );
         }).toSet();
       });
@@ -322,6 +328,7 @@ class _ViewMapState extends State<ViewMap> {
                         child: InkWell(
                           borderRadius: BorderRadius.circular(30),
                           onTap: () async {
+                            HapticFeedback.lightImpact();
                             final url = Uri.parse("https://www.google.com/maps/dir/?api=1&destination=${issue['latitude']},${issue['longitude']}");
                             if (await canLaunchUrl(url)) await launchUrl(url);
                           },
@@ -385,6 +392,7 @@ class _ViewMapState extends State<ViewMap> {
 
     return GestureDetector(
       onTap: () {
+        HapticFeedback.lightImpact();
         _showFullImage(imageUrl);
       },
       child: Container(
@@ -529,7 +537,10 @@ class _ViewMapState extends State<ViewMap> {
                           ),
                         ),
                         selected: isSelected,
-                        onSelected: (selected) => _toggleCategory(cat),
+                        onSelected: (selected) {
+                          HapticFeedback.lightImpact();
+                          _toggleCategory(cat);
+                        },
                       ),
                     );
                   }).toList(),
@@ -550,6 +561,7 @@ class _ViewMapState extends State<ViewMap> {
                   backgroundColor: Colors.white,
                   child: const Icon(Icons.my_location, color: Color(0xFF7864C8)),
                   onPressed: () async {
+                    HapticFeedback.lightImpact();
                     var pos = await location.getLocation();
                     mapController.animateCamera(
                       CameraUpdate.newLatLng(LatLng(pos.latitude!, pos.longitude!)),
@@ -563,7 +575,10 @@ class _ViewMapState extends State<ViewMap> {
                   heroTag: "zoomIn",
                   backgroundColor: Colors.white,
                   child: const Icon(Icons.add, color: Colors.black87),
-                  onPressed: () => mapController.animateCamera(CameraUpdate.zoomIn()),
+                  onPressed: () {
+                    HapticFeedback.lightImpact();
+                    mapController.animateCamera(CameraUpdate.zoomIn());
+                  },
                 ),
                 const SizedBox(height: 8),
 
@@ -572,7 +587,10 @@ class _ViewMapState extends State<ViewMap> {
                   heroTag: "zoomOut",
                   backgroundColor: Colors.white,
                   child: const Icon(Icons.remove, color: Colors.black87),
-                  onPressed: () => mapController.animateCamera(CameraUpdate.zoomOut()),
+                  onPressed: () {
+                    HapticFeedback.lightImpact();
+                    mapController.animateCamera(CameraUpdate.zoomOut());
+                  },
                 ),
               ],
             ),

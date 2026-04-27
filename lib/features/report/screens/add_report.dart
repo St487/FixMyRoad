@@ -7,6 +7,7 @@ import 'package:fix_my_road/shared/support_widget/snack_bar.dart';
 import 'package:fix_my_road/utils/app_text.dart';
 import 'package:fix_my_road/utils/cameraPermission.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -124,6 +125,7 @@ class _AddReportState extends State<AddReport> {
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black, size: 20),
             onPressed: () {
+              HapticFeedback.lightImpact();
               report.clearForm();
               Navigator.pop(context);
             },
@@ -206,10 +208,14 @@ class _AddReportState extends State<AddReport> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               if (report.pickedLocation != null)
-                                IconButton(icon: const Icon(Icons.cancel, color: Colors.grey), onPressed: () => setState(() { report.pickedLocation = null; report.pickedAddress = null; })),
+                                IconButton(icon: const Icon(Icons.cancel, color: Colors.grey), onPressed: () {
+                                  HapticFeedback.lightImpact();
+                                  setState(() { report.pickedLocation = null; report.pickedAddress = null; });
+                                }),
                               IconButton(
                                 icon: const Icon(Icons.map_rounded, color: kPrimary),
                                 onPressed: () async {
+                                  HapticFeedback.lightImpact();
                                   final result = await Navigator.push(context, MaterialPageRoute(builder: (_) => const MapPickerPage()));
                                   if (result != null && result is Map) {
                                     setState(() {
@@ -253,7 +259,10 @@ class _AddReportState extends State<AddReport> {
                     itemBuilder: (context, index) {
                       if (index == report.selectedImages.length) {
                         return GestureDetector(
-                          onTap: () => _showPickerOptions(lang),
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            _showPickerOptions(lang);
+                          },
                           child: Container(
                             width: 100,
                             margin: const EdgeInsets.only(right: 12),
@@ -280,7 +289,10 @@ class _AddReportState extends State<AddReport> {
                             top: 5,
                             right: 17,
                             child: GestureDetector(
-                              onTap: () => setState(() => report.selectedImages.removeAt(index)),
+                              onTap: () {
+                                HapticFeedback.lightImpact();
+                                setState(() => report.selectedImages.removeAt(index));
+                              },
                               child: Container(
                                 padding: const EdgeInsets.all(4),
                                 decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
@@ -300,6 +312,7 @@ class _AddReportState extends State<AddReport> {
                   text: AppText.submitReport(lang),
                   isLoading: report.isSubmitting,
                   onPressed: () async {
+                    HapticFeedback.lightImpact();
                     final error = report.validateFields();
                     if (error != null) {
                       CustomSnackbar.show(context, error, Colors.redAccent, Colors.white);

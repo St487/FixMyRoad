@@ -95,7 +95,10 @@ class _PasscodeScreenState extends State<PasscodeScreen> {
                   Padding(
                     padding: const EdgeInsets.only(top: 20.0, left: 8.0),
                     child: GestureDetector(
-                      onTap: () => Navigator.pop(context),
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        Navigator.pop(context);
+                      },
                       child: const Icon(Icons.arrow_back, color: Colors.white, size: 30),
                     ),
                   ),
@@ -155,6 +158,7 @@ class _PasscodeScreenState extends State<PasscodeScreen> {
                             TextButton(
                               onPressed: controller.resendCountdown == 0
                                   ? () async {
+                                      HapticFeedback.lightImpact();
                                       final result = await controller.resendCode(widget.email);
 
                                       if (result['status'] == 'success') {

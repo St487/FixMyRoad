@@ -3,9 +3,13 @@ import 'package:fix_my_road/features/home/screens/home_page.dart';
 import 'package:fix_my_road/features/profile/screens/profile.dart';
 import 'package:fix_my_road/features/report/screens/report_status.dart';
 import 'package:fix_my_road/features/map/screens/view_map.dart';
+import 'package:fix_my_road/main.dart';
+import 'package:fix_my_road/utils/notification_service.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_floating_bottom_bar/flutter_floating_bottom_bar.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -33,6 +37,16 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
         });
       }
     });
+    _startNotificationService();
+  }
+
+  void _startNotificationService() async {
+    final prefs = await SharedPreferences.getInstance();
+    int? userId = prefs.getInt("user_id");
+
+    if (userId != null) {
+      NotificationService().start(userId.toString(), navigatorKey);
+    }
   }
 
   @override
@@ -118,6 +132,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
                 height: 60,
                 child: GestureDetector(
                   onTap: () {
+                    HapticFeedback.lightImpact();
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => const AddReport()),

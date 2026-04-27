@@ -3,6 +3,7 @@ import 'package:fix_my_road/shared/support_widget/primary_button.dart';
 import 'package:fix_my_road/shared/support_widget/snack_bar.dart';
 import 'package:fix_my_road/utils/app_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:fix_my_road/features/profile/controllers/changePasswordController.dart';
 import 'change_password_step2.dart';
@@ -70,7 +71,10 @@ class _ChangePasswordStep1State extends State<ChangePasswordStep1> {
                 prefixIcon: const Icon(Icons.lock_outline),
                 suffixIcon: IconButton(
                   icon: Icon(_isObscured ? Icons.visibility_off : Icons.visibility),
-                  onPressed: () => setState(() => _isObscured = !_isObscured),
+                  onPressed: () {
+                    HapticFeedback.lightImpact();
+                    setState(() => _isObscured = !_isObscured);
+                  },
                 ),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
                 enabledBorder: OutlineInputBorder(
@@ -85,7 +89,10 @@ class _ChangePasswordStep1State extends State<ChangePasswordStep1> {
             PrimaryButton(
               text: AppText.continueButton(lang),
               isLoading: auth.isLoading,
-              onPressed: () => _handleVerify(lang),
+              onPressed: () {
+                HapticFeedback.lightImpact();
+                _handleVerify(lang);
+              },
             ),
           ],
         ),

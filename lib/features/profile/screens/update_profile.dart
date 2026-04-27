@@ -11,6 +11,7 @@ import 'package:fix_my_road/utils/app_text.dart';
 import 'package:fix_my_road/utils/cameraPermission.dart';
 import 'package:fix_my_road/utils/myconfig.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -118,7 +119,10 @@ Future<void> _loadProfileDefaults() async {
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            HapticFeedback.lightImpact();
+            Navigator.pop(context);
+          },
         ),
         title: Text(
           AppText.editProfile(lang),
@@ -233,7 +237,10 @@ Future<void> _loadProfileDefaults() async {
           bottom: 5,
           right: 5,
           child: GestureDetector(
-            onTap: () => _showImageSourceDialog(lang),
+            onTap: () {
+              HapticFeedback.lightImpact();
+              _showImageSourceDialog(lang);
+            },
             child: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
@@ -322,6 +329,7 @@ Future<void> _loadProfileDefaults() async {
       ),
       child: ElevatedButton(
         onPressed: () async {
+          HapticFeedback.lightImpact();
           final auth = context.read<ProfileController>();
 
           final confirm = await ConfirmDialog.show(
@@ -496,6 +504,7 @@ Future<void> _loadProfileDefaults() async {
                   icon: Icons.camera_alt_rounded,
                   label: AppText.takePhoto(lang),
                   onTap: () {
+                    HapticFeedback.lightImpact();
                     Navigator.pop(context);
                     _pickImageWithPermission(ImageSource.camera, lang);
                   },
@@ -504,6 +513,7 @@ Future<void> _loadProfileDefaults() async {
                   icon: Icons.photo_library_rounded,
                   label: AppText.chooseGallery(lang),
                   onTap: () {
+                    HapticFeedback.lightImpact();
                     Navigator.pop(context);
                     _pickImageWithPermission(ImageSource.gallery, lang);
                   },

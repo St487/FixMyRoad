@@ -9,6 +9,7 @@ import 'package:fix_my_road/shared/support_widget/snack_bar.dart';
 import 'package:fix_my_road/utils/app_text.dart';
 import 'package:fix_my_road/utils/cameraPermission.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -193,7 +194,10 @@ class _EditReportState extends State<EditReport> {
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black, size: 20),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            HapticFeedback.lightImpact();
+            Navigator.pop(context);
+          },
         ),
         title: Text(
           AppText.editReport(lang),
@@ -281,6 +285,7 @@ class _EditReportState extends State<EditReport> {
                               IconButton(
                                 icon: const Icon(Icons.cancel, color: Colors.grey),
                                 onPressed: () => setState(() {
+                                  HapticFeedback.lightImpact();
                                   _pickedLocation = null;
                                   _pickedAddress = null;
                                   locationController.text = '';
@@ -289,6 +294,7 @@ class _EditReportState extends State<EditReport> {
                             IconButton(
                               icon: const Icon(Icons.map_rounded, color: kPrimary),
                               onPressed: () async {
+                                HapticFeedback.lightImpact();
                                 final result = await Navigator.push(context, MaterialPageRoute(builder: (_) => const MapPickerPage()));
                                 if (result != null && result is Map && mounted) {
                                   setState(() {
@@ -343,7 +349,10 @@ class _EditReportState extends State<EditReport> {
                           // Add Button
                           if ((_initialPhotoUrls.length + _selectedImages.length) < 3)
                             GestureDetector(
-                              onTap: () => _showPickerOptions(lang),
+                              onTap: () {
+                                HapticFeedback.lightImpact();
+                                _showPickerOptions(lang);
+                              },
                               child: Container(
                                 width: 100,
                                 margin: const EdgeInsets.only(right: 10),
@@ -382,6 +391,7 @@ class _EditReportState extends State<EditReport> {
                 text: AppText.updateReport(lang),
                 isLoading: reportController.isSubmitting,
                 onPressed: () async {
+                  HapticFeedback.lightImpact();
                   final confirm = await ConfirmDialog.show(
                   context: context,
                   title: AppText.updateReport(lang),
@@ -452,6 +462,7 @@ class _EditReportState extends State<EditReport> {
   Widget _sourceOption(IconData icon, String label, VoidCallback onTap) {
     return GestureDetector(
       onTap: () {
+        HapticFeedback.lightImpact();
         Navigator.pop(context);
         onTap();
       },

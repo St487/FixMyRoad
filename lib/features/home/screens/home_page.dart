@@ -9,6 +9,7 @@ import 'package:fix_my_road/shared/support_widget/issue_card.dart';
 import 'package:fix_my_road/utils/app_text.dart';
 import 'package:fix_my_road/utils/myconfig.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
@@ -57,6 +58,7 @@ class _HomePageState extends State<HomePage> {
               padding: const EdgeInsets.only(bottom: 70.0),
               child: FloatingActionButton(
                 onPressed: () {
+                  HapticFeedback.lightImpact();
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const AiChatbot()),
@@ -153,6 +155,7 @@ class _HomePageState extends State<HomePage> {
                               label: AppText.addReport(lang),
                               color: const Color.fromARGB(255, 248, 187, 222),
                               onTap: () {
+                                HapticFeedback.lightImpact();
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(builder: (context) => const AddReport()),
@@ -168,6 +171,7 @@ class _HomePageState extends State<HomePage> {
                               label: AppText.viewMap(lang),
                               color: const Color.fromARGB(255, 204, 192, 249),
                               onTap: () {
+                                HapticFeedback.lightImpact();
                                 widget.onNavigate(1);
                               },
                             ),
@@ -180,6 +184,7 @@ class _HomePageState extends State<HomePage> {
                               label: AppText.reportStatus(lang),
                               color: const Color.fromARGB(255, 252, 217, 192),
                               onTap: () {
+                                HapticFeedback.lightImpact();
                                 widget.onNavigate(3);
                               },
                             ),
@@ -206,6 +211,7 @@ class _HomePageState extends State<HomePage> {
                       padding: const EdgeInsets.only(right: 15),
                       child: InkWell(
                         onTap: () {
+                          HapticFeedback.lightImpact();
                           Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) => NearbyIssuesPage()),
@@ -254,9 +260,12 @@ class _HomePageState extends State<HomePage> {
                             ),
                           );
                         } else if (controller.nearbyIssues.isEmpty) {
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
+                          return Center(
+                              child: Text(
+                                AppText.noNearbyIssues(lang),
+                                style: TextStyle(fontSize: 16, color: Colors.grey),
+                              ),
+                            );
                         } else {
                           // Filter only approved and in_progress
                           final filteredIssues = controller.nearbyIssues.where((issue) =>
@@ -288,6 +297,7 @@ class _HomePageState extends State<HomePage> {
                                 distance: "${issue['distance']} ${AppText.away(lang)}",
                                 status: statusText,
                                 onTap: () {
+                                  HapticFeedback.lightImpact();
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(

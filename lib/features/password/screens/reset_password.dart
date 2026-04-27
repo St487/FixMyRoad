@@ -4,6 +4,7 @@ import 'package:fix_my_road/features/auth/screens/login_screen.dart';
 import 'package:fix_my_road/shared/support_widget/snack_bar.dart';
 import 'package:fix_my_road/utils/app_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class ResetPassword extends StatefulWidget {
@@ -63,7 +64,10 @@ class _ResetPasswordState extends State<ResetPassword> {
                     Padding(
                       padding: const EdgeInsets.only(top: 20.0, left: 8.0),
                       child: GestureDetector(
-                        onTap: () => Navigator.pop(context),
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          Navigator.pop(context);
+                        },
                         child: const Icon(Icons.arrow_back, color: Colors.white, size: 30),
                       ),
                     ),
@@ -123,6 +127,7 @@ class _ResetPasswordState extends State<ResetPassword> {
                           padding: const EdgeInsets.only(bottom: 50),
                           child: ElevatedButton(
                             onPressed: () async {
+                              HapticFeedback.lightImpact();
                               if (passController.text != confirmController.text) {
                                 CustomSnackbar.show(
                                   context,
@@ -147,6 +152,7 @@ class _ResetPasswordState extends State<ResetPassword> {
                               });
 
                               if (result['success'] == true) {
+                                HapticFeedback.lightImpact();
                                 CustomSnackbar.show(
                                   context,
                                   AppText.passwordChangeSuccess(lang),

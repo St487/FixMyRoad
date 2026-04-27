@@ -10,7 +10,9 @@ import 'package:fix_my_road/shared/support_widget/confirm_dialog.dart';
 import 'package:fix_my_road/shared/support_widget/snack_bar.dart';
 import 'package:fix_my_road/utils/app_text.dart';
 import 'package:fix_my_road/utils/myconfig.dart';
+import 'package:fix_my_road/utils/notification_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -126,6 +128,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       icon: Icons.person_sharp,
                       title: AppText.editProfile(lang),
                       onTap: () {
+                        HapticFeedback.lightImpact();
                         Navigator.push(
                           context,
                           PageRouteBuilder(
@@ -149,6 +152,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       icon: Icons.lock_outline_rounded,
                       title: AppText.changePassword(lang),
                       onTap: () {
+                        HapticFeedback.lightImpact();
                         Navigator.push(
                           context,
                           PageRouteBuilder(
@@ -172,20 +176,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       icon: Icons.language_rounded,
                       title: AppText.chooseLanguage(lang),
                       subtitle: lang ? "English" : "Malay",
-                      onTap: () => _showLanguageDialog(),
-                    ),
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        _showLanguageDialog();
+                      },
+                    ),  
                     _buildProfileOption(
                       icon: Icons.call,
                       title: AppText.contact(lang),
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => ContactScreen()),
-                      ),
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => ContactScreen()),
+                        );
+                      },
                     ),
                     _buildProfileOption(
                       icon: Icons.logout_rounded,
                       title: AppText.logout(lang),
                       onTap: () async { 
+                        HapticFeedback.lightImpact();
                         final confirm = await ConfirmDialog.show(
                         context: context,
                         title: AppText.logout(lang),
@@ -263,6 +274,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             title: const Text("English"),
             leading: const Icon(Icons.abc),
             onTap: () {
+              HapticFeedback.selectionClick();
               lang.setLanguage(true);
               Navigator.pop(context);
             },
@@ -271,6 +283,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             title: const Text("Malay"),
             leading: const Icon(Icons.language),
             onTap: () {
+              HapticFeedback.selectionClick();
               lang.setLanguage(false);
               Navigator.pop(context);
             },
@@ -285,7 +298,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     // final prefs = await SharedPreferences.getInstance();
 
     // await prefs.clear();
-    
+    NotificationService().stop();
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (context) => const LoginScreen()),

@@ -8,6 +8,7 @@ import 'package:fix_my_road/features/auth/screens/registration_screen.dart';
 import 'package:fix_my_road/shared/support_widget/snack_bar.dart';
 import 'package:fix_my_road/utils/app_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_places_flutter/model/place_details.dart';
 import 'package:provider/provider.dart';
 
@@ -90,6 +91,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       icon: const Icon(Icons.language),
                       label: Text(lang ? 'BM' : 'EN'),
                       onPressed: () {
+                        HapticFeedback.lightImpact();
                         languageProvider.toggleLanguage();
                       },
                     ),
@@ -131,6 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           color: Colors.grey,
                         ),
                         onPressed: () {
+                          HapticFeedback.lightImpact();
                           setState(() {
                             _isPasswordVisible = !_isPasswordVisible;
                           });
@@ -151,6 +154,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           Checkbox(
                             value: auth.rememberMe,
                             onChanged: (value) {
+                              HapticFeedback.lightImpact();
                               auth.rememberMe = value!;
                               auth.notifyListeners();
                             },
@@ -167,6 +171,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     width: 250,
                     isLoading: auth.isLoading,
                     onPressed: () async {
+                      HapticFeedback.lightImpact();
                       final result = await context.read<AuthController>().login();
 
                       if (result['success']) {
@@ -202,6 +207,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   // Forgot Password
                   TextButton(
                     onPressed: () {
+                      HapticFeedback.lightImpact();
                       TransitionButton.navigateWithSlide(context, const ForgotPassword());
                     },
                     child: Text(AppText.forgotPassword(lang)),

@@ -2,6 +2,7 @@ import 'package:fix_my_road/features/home/controllers/detailController.dart';
 import 'package:fix_my_road/provider/language_provider.dart';
 import 'package:fix_my_road/utils/app_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:fix_my_road/utils/myconfig.dart';
@@ -226,6 +227,7 @@ class _IssueDetailView extends StatelessWidget {
                     child: InkWell(
                       borderRadius: BorderRadius.circular(30),
                       onTap: () async {
+                        HapticFeedback.lightImpact();
                         final url = Uri.parse("https://www.google.com/maps/dir/?api=1&destination=${issue['latitude']},${issue['longitude']}");
                         if (await canLaunchUrl(url)) await launchUrl(url);
                       },
@@ -271,7 +273,10 @@ class _IssueDetailView extends StatelessWidget {
             top: MediaQuery.of(context).padding.top + 10,
             left: 20,
             child: GestureDetector(
-              onTap: () => Navigator.pop(context),
+              onTap: () {
+                HapticFeedback.lightImpact();
+                Navigator.pop(context);
+              },
               child: Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),

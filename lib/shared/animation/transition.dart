@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class TransitionButton extends StatelessWidget {
   final Widget page;
@@ -38,6 +39,7 @@ class TransitionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextButton(
       onPressed: () {
+        HapticFeedback.lightImpact();
         navigateWithSlide(context, page, durationMs: durationMs);
       },
       child: Text(text),

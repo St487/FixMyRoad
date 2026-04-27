@@ -5,6 +5,7 @@ import 'package:fix_my_road/features/password/screens/passcode.dart';
 import 'package:fix_my_road/shared/support_widget/snack_bar.dart';
 import 'package:fix_my_road/utils/app_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class ForgotPassword extends StatefulWidget {
@@ -62,7 +63,10 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                   Padding(
                     padding: const EdgeInsets.only(top: 20.0, left: 8.0),
                     child: GestureDetector(
-                      onTap: () => Navigator.pop(context),
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        Navigator.pop(context);
+                      },
                       child: const Icon(Icons.arrow_back, color: Colors.white, size: 30),
                     ),
                   ),
@@ -111,6 +115,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                             ),
                             TextButton(
                               onPressed: (){
+                                HapticFeedback.lightImpact();
                                 Navigator.pop(context);
                               }, 
                               child: Text(
@@ -129,6 +134,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                           padding: const EdgeInsets.only(bottom: 50),
                           child: ElevatedButton(
                             onPressed: () async {
+                              HapticFeedback.lightImpact();
                               setState(() {
                                 isLoading = true;
                               });

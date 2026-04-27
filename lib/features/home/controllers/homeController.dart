@@ -91,6 +91,13 @@ class HomeController extends ChangeNotifier {
 
       print(response.body);
 
+      if (response.statusCode == 200 && response.body.isEmpty) {
+        errorMessage = isEnglish ? "No nearby issues found." : "Tidak ada masalah terdekat yang ditemukan.";
+        nearbyIssues = [];
+        notifyListeners();
+        return;
+      }
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['status'] == 'success') {

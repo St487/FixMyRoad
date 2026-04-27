@@ -1,37 +1,44 @@
 import 'package:fix_my_road/provider/language_provider.dart';
 import 'package:fix_my_road/utils/app_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ContactScreen extends StatelessWidget {
   final String phoneNumber = "+60123456789";
-  final String emailAddress = "support@fixmyroad.com";
+  final String emailAddress = "fixmyroad.app.noreply@gmail.com";
   final Color primaryColor = Colors.deepPurple;
 
   const ContactScreen({super.key});
 
   // Launch phone dialer
   void _launchPhone(String phone) async {
-    final Uri url = Uri(scheme: 'tel', path: phone);
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url);
-    } else {
-      debugPrint("Could not launch $phone");
+    final Uri url = Uri.parse("tel:$phone");
+
+    try {
+      await launchUrl(
+        url,
+        mode: LaunchMode.externalApplication,
+      );
+    } catch (e) {
+      debugPrint("Phone launch failed: $e");
     }
   }
 
   // Launch email client
   void _launchEmail(String email) async {
-    final Uri url = Uri(
-      scheme: 'mailto',
-      path: email,
-      query: 'subject=Support Inquiry&body=Hello,',
+    final Uri url = Uri.parse(
+      "mailto:$email?subject=Support Inquiry&body=Hello,"
     );
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url);
-    } else {
-      debugPrint("Could not launch $email");
+
+    try {
+      await launchUrl(
+        url,
+        mode: LaunchMode.externalApplication,
+      );
+    } catch (e) {
+      debugPrint("Email launch failed: $e");
     }
   }
 
@@ -63,7 +70,10 @@ class ContactScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             GestureDetector(
-              onTap: () => _launchPhone(phoneNumber),
+              onTap: () {
+                HapticFeedback.lightImpact();
+                _launchPhone(phoneNumber);
+              },
               child: Row(
                 children: [
                   Icon(Icons.phone, color: primaryColor),

@@ -3,6 +3,7 @@ import 'package:fix_my_road/shared/support_widget/primary_button.dart';
 import 'package:fix_my_road/shared/support_widget/snack_bar.dart';
 import 'package:fix_my_road/utils/app_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:fix_my_road/features/profile/controllers/changePasswordController.dart';
 
@@ -84,7 +85,10 @@ class _ChangePasswordStep2State extends State<ChangePasswordStep2> {
             PrimaryButton(
               text: AppText.updatePassword(lang),
               isLoading: auth.isLoading,
-              onPressed: () => _handleUpdate(lang),
+              onPressed: () {
+                HapticFeedback.lightImpact();
+                _handleUpdate(lang);
+              },
             ),
           ],
         ),

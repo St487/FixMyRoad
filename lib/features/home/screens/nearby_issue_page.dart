@@ -7,6 +7,7 @@ import 'package:fix_my_road/utils/locationPermission.dart';
 import 'package:flutter/material.dart';
 import 'package:fix_my_road/features/home/controllers/homeController.dart';
 import 'package:fix_my_road/utils/myconfig.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class NearbyIssuesPage extends StatefulWidget {
@@ -86,7 +87,10 @@ class _NearbyIssuesPageState extends State<NearbyIssuesPage> {
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black87, size: 20),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            HapticFeedback.lightImpact();
+            Navigator.pop(context);
+          },
         ),
       ),
       body: RefreshIndicator(
@@ -158,6 +162,7 @@ class _BeautifulIssueCard extends StatelessWidget {
           color: Colors.transparent,
           child: InkWell(
             onTap: () {
+              HapticFeedback.lightImpact();
               Navigator.push(
                 context,
                 MaterialPageRoute(
