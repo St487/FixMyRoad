@@ -41,12 +41,9 @@ class _SplashscreenState extends State<Splashscreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: const [
               SizedBox(height: 20),
-              Text(
-                'Fix My Road',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                ),
+              Image(
+                image: AssetImage('assets/images/logo.png'),
+                height: 300,
               ),
             ],
           ),

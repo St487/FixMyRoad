@@ -9,7 +9,7 @@ This application provide functions:
 
 ## Screenshots
 
-<p align="center">
+<p align="left">
 
 <img src="assets/readme/login.jpeg" width="150" style="margin:10px;"/>
 <img src="assets/readme/home.jpeg" width="150" style="margin:10px;"/>

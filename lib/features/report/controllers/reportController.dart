@@ -140,6 +140,8 @@ class ReportController extends ChangeNotifier {
         report['id'] = int.tryParse(report['id']) ?? 0;
       }
 
+        report['rejection_reason'] = report['rejection_reason'] ?? "";
+
         if (report['photos'] != null) {
           List<String> photoUrls = [];
           for (var photo in report['photos']) {

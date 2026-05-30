@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
         android:usesCleartextTraffic="true"
-        android:label="fix_my_road"
+        android:label="Fix My Road"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

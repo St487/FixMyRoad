@@ -435,6 +435,38 @@ class _ReportStatusState extends State<ReportStatus> {
 
                     const SizedBox(height: 32),
 
+                    if ((report['status'] ?? "").toString().toLowerCase() == "rejected" &&
+                      (report['rejection_reason'] ?? "").toString().isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 6, 0, 24),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withOpacity(0.08),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.red.withOpacity(0.2)),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Icon(Icons.info_outline, color: Colors.red, size: 18),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                "Rejection Reason: ${report['rejection_reason']}",
+                                style: const TextStyle(
+                                  color: Colors.red,
+                                  fontWeight: FontWeight.w500,
+                                  height: 1.4,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
                     // Location Card
                     _sectionHeader(AppText.location(lang)),
                     Container(

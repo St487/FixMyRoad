@@ -168,7 +168,11 @@ class _IssueDetailView extends StatelessWidget {
                             decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
                             child: Text(
                               issue['description'] ?? AppText.noDescription(lang),
-                              style: TextStyle(color: Colors.grey[800], height: 1.6, fontSize: 15),
+                              style: TextStyle(
+                                color: Colors.grey[800],
+                                height: 1.6,
+                                fontSize: 15,
+                              ),
                             ),
                           ),
                           const SizedBox(height: 30),

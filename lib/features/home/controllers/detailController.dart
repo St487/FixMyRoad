@@ -36,6 +36,8 @@ class DetailController extends ChangeNotifier {
       final url = Uri.parse("${MyConfig.myurl}/get_nearby_issues.php?id=$issueId");
       final response = await http.get(url);
 
+      print("Fetch Issue Response: ${response.body}"); // Debugging line
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['status'] == 'success') {

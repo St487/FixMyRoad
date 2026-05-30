@@ -7,7 +7,8 @@ include 'config.php';
 // Get user_id (optional filter)
 $user_id = isset($_GET['user_id']) ? (int)$_GET['user_id'] : null;
 
-$sql = "SELECT report_id, title, description, location_text, issue_type, status, created_at, photo1, photo2, photo3
+$sql = "SELECT report_id, title, description, location_text, issue_type, status, created_at, 
+               photo1, photo2, photo3, rejection_reason
         FROM report";
 
 if ($user_id) {
@@ -31,6 +32,7 @@ if ($result->num_rows > 0) {
             "status" => $row['status'],
             "created_at" => $row['created_at'],
             "date" => date("M d, Y", strtotime($row['created_at'])),
+            "rejection_reason" => $row['rejection_reason'] ?? "",
 
             "photos" => [
                 $row['photo1'] ?? "",

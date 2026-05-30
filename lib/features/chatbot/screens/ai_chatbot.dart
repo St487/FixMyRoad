@@ -22,6 +22,26 @@ class _AiChatbotState extends State<AiChatbot> {
     "Why my report is rejected?",
   ];
 
+  Future<void> _typeMessage(String fullText) async {
+    String currentText = "";
+
+    setState(() {
+      _messages.add({"sender": "ai", "text": ""});
+    });
+
+    int index = _messages.length - 1;
+
+    for (int i = 0; i < fullText.length; i++) {
+      await Future.delayed(const Duration(milliseconds: 5)); // speed control
+
+      currentText += fullText[i];
+
+      setState(() {
+        _messages[index]["text"] = currentText;
+      });
+    }
+  }
+
   List<String> _randomFaqs = [];
   final TextEditingController _controller = TextEditingController();
   final List<Map<String, String>> _messages = [
@@ -53,17 +73,21 @@ class _AiChatbotState extends State<AiChatbot> {
       userId: 1,
     );
 
+    final reply = response["reply"] ?? "No response";
+
     setState(() {
-      _messages.add({
-        "sender": "ai",
-        "text": response["reply"] ?? "No response"
-      });
       _isLoading = false;
     });
+
+    await _typeMessage(reply);
   }
 
   void _handleSend() {
-    final text = _controller.text;
+    if (_isLoading) return;
+
+    final text = _controller.text.trim();
+    if (text.isEmpty) return;
+
     _controller.clear();
     _sendMessage(text);
   }
@@ -148,22 +172,22 @@ class _AiChatbotState extends State<AiChatbot> {
   }
 
   Widget _buildLoadingIndicator() {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: const Color(0xFFF1F1F1),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: const Text(
-          "Typing...",
-          style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
-        ),
+  return Align(
+    alignment: Alignment.centerLeft,
+    child: Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF1F1F1),
+        borderRadius: BorderRadius.circular(16),
       ),
-    );
-  }
+      child: const Text(
+        "FMR is typing...",
+        style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
+      ),
+    ),
+  );
+}
 
   Widget _buildSuggestions() {
     return Container(
@@ -214,6 +238,7 @@ class _AiChatbotState extends State<AiChatbot> {
               ),
               child: TextField(
                 controller: _controller,
+                onSubmitted: _isLoading ? null : (value) => _handleSend(),
                 decoration: const InputDecoration(
                   hintText: "Ask about app or road issues...",
                   hintStyle: TextStyle(fontSize: 14, color: Colors.grey),
@@ -225,13 +250,18 @@ class _AiChatbotState extends State<AiChatbot> {
           ),
           const SizedBox(width: 12),
           GestureDetector(
-            onTap: _handleSend,
-            child: const CircleAvatar(
+            onTap: _isLoading ? null : _handleSend,
+            child: CircleAvatar(
               radius: 24,
-              backgroundColor: Color(0xFF9B67BE),
-              child: Icon(Icons.send_rounded, color: Colors.white, size: 20),
+              backgroundColor:
+                  _isLoading ? Colors.grey : const Color(0xFF9B67BE),
+              child: const Icon(
+                Icons.send_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
             ),
-          ),
+          )
         ],
       ),
     );
