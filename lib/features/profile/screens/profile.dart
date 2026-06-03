@@ -70,10 +70,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         child: CircleAvatar(
                           radius: 60,
                           backgroundImage: (auth.profilePicture != null &&
-                              auth.profilePicture!.isNotEmpty &&
-                              auth.profilePicture != "null")
-                          ? NetworkImage("${MyConfig.myurl}/${auth.profilePicture}")
-                          : const AssetImage("assets/images/personIcon.jpg"),
+                                            auth.profilePicture!.isNotEmpty &&
+                                            auth.profilePicture != "null")
+                                        ? NetworkImage(auth.profilePicture!)
+                                        : const AssetImage("assets/images/personIcon.jpg")
+                                            as ImageProvider,
                         ),
                       ),
                       // Positioned(
@@ -305,89 +306,4 @@ class _ProfileScreenState extends State<ProfileScreen> {
       (route) => false,
     );
   }
-
-  // Future<void> pickImage(ImageSource source) async {
-  //   final picker = ImagePicker();
-  //   final pickedFile = await picker.pickImage(source: source);
-
-  //   if (pickedFile != null) {
-  //     CroppedFile? croppedFile = await ImageCropper().cropImage(
-  //     sourcePath: pickedFile.path,
-  //     aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1), // square
-  //     uiSettings: [
-  //       AndroidUiSettings(
-  //         toolbarTitle: 'Crop Image',
-  //         toolbarColor: const Color(0xFF7864C8),
-  //         toolbarWidgetColor: Colors.white,
-  //         initAspectRatio: CropAspectRatioPreset.square,
-  //         lockAspectRatio: true, // ensures square crop
-  //         cropStyle: CropStyle.circle, // optional: preview circle, still saves as square
-  //       ),
-  //       IOSUiSettings(
-  //         title: 'Crop Image',
-  //         aspectRatioLockEnabled: true,
-  //         resetAspectRatioEnabled: false,
-  //       ),
-  //     ],
-  //   );
-
-  //     if (croppedFile != null) {
-        
-  //       File file = File(croppedFile.path);
-
-  //       if (!mounted) return;
-
-  //       final controller = context.read<ProfileController>();
-  //       final result = await controller.uploadProfileImage(file);
-
-  //       if (result['status'] == 'success') {
-  //         await controller.getProfile(); 
-  //         if (!mounted) return;
-  //         CustomSnackbar.show(context, result['message'],Colors.white, Colors.greenAccent);
-  //       } else {
-  //         if (!mounted) return;
-  //         CustomSnackbar.show(context, result['message'] ?? "Upload failed", Colors.white, Colors.red);
-  //       }
-  //     }
-  //   }
-  // }
-
-  // void _showImageSourceDialog() {
-  //   showModalBottomSheet(
-  //     context: context,
-  //     shape: const RoundedRectangleBorder(
-  //         borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-  //     builder: (context) => Column(
-  //       mainAxisSize: MainAxisSize.min,
-  //       children: [
-  //         const Padding(
-  //           padding: EdgeInsets.all(20),
-  //           child: Text(
-  //             "Choose Image Source",
-  //             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-  //           ),
-  //         ),
-  //         ListTile(
-  //           leading: const Icon(Icons.photo_library),
-  //           title: const Text("Gallery"),
-  //           onTap: () {
-  //             Navigator.pop(context);
-  //             pickImage(ImageSource.gallery);
-  //           },
-  //         ),
-  //         ListTile(
-  //           leading: const Icon(Icons.camera_alt),
-  //           title: const Text("Camera"),
-  //           onTap: () {
-  //             Navigator.pop(context);
-  //             pickImage(ImageSource.camera);
-  //           },
-  //         ),
-  //         const SizedBox(height: 20),
-  //       ],
-  //     ),
-  //   );
-  // }
-  
-  
 }

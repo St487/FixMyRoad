@@ -76,8 +76,10 @@ class _IssueDetailView extends StatelessWidget {
                                   child: const Icon(Icons.image_not_supported, size: 50, color: Colors.grey),
                                 )
                               : Image.network(
-                                  "${MyConfig.myurl}/${photos[index]}",
+                                  photos[index],
                                   fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) =>
+                                      Image.asset("assets/default_icon.jpg", fit: BoxFit.cover),
                                 );
                         },
                       ),

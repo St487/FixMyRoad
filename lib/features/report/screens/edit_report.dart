@@ -96,8 +96,12 @@ class _EditReportState extends State<EditReport> {
       }
 
       _initialPhotoUrls = List<String>.from(data['photos'] ?? [])
-          .map((photo) => "${MyConfig.myurl}/$photo")
-          .toList();
+      .map((photo) {
+        final p = photo.toString();
+        if (p.startsWith("http")) return p;
+        return "${MyConfig.myurl}/$p";
+      })
+      .toList();
     });
   }
 

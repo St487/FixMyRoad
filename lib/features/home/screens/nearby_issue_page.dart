@@ -3,6 +3,7 @@
 import 'package:fix_my_road/features/home/screens/issue_detail.dart';
 import 'package:fix_my_road/provider/language_provider.dart';
 import 'package:fix_my_road/utils/app_text.dart';
+import 'package:fix_my_road/utils/image_helper.dart';
 import 'package:fix_my_road/utils/locationPermission.dart';
 import 'package:flutter/material.dart';
 import 'package:fix_my_road/features/home/controllers/homeController.dart';
@@ -183,14 +184,20 @@ class _BeautifulIssueCard extends StatelessWidget {
                       color: const Color.fromARGB(255, 245, 240, 255),
                     ),
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(15),
-                      child: Image.network(
-                        "${MyConfig.myurl}/${issue['icon']}",
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) =>
-                            Image.asset("assets/default_icon.jpg", fit: BoxFit.cover),
-                      ),
+                    borderRadius: BorderRadius.circular(15),
+                    child: Builder(
+                      builder: (_) {
+                        final url = ImageHelper.getUrl(issue['icon']);
+
+                        return Image.network(
+                          url,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) =>
+                              Image.asset("assets/default_icon.jpg", fit: BoxFit.cover),
+                        );
+                      },
                     ),
+                  ),
                   ),
                   const SizedBox(width: 15),
                   // Content

@@ -228,9 +228,11 @@ Future<void> _loadProfileDefaults() async {
           child: CircleAvatar(
             radius: 60,
             backgroundColor: Colors.grey[200],
-            backgroundImage: auth.profilePicture != null
-                ? NetworkImage("${MyConfig.myurl}/${auth.profilePicture}")
-                : const AssetImage("assets/images/personIcon.jpg") as ImageProvider,
+            backgroundImage: (auth.profilePicture != null &&
+                              auth.profilePicture!.isNotEmpty)
+                          ? NetworkImage(auth.profilePicture!)
+                          : const AssetImage("assets/images/personIcon.jpg")
+                              as ImageProvider,
           ),
         ),
         Positioned(

@@ -59,6 +59,18 @@ class HomeController extends ChangeNotifier {
     notifyListeners();
   }
 
+  String getImageUrl(String? path) {
+    if (path == null || path.isEmpty) {
+      return "";
+    }
+
+    if (path.startsWith("http://") || path.startsWith("https://")) {
+      return path;
+    }
+
+    return "${MyConfig.myurl}/$path";
+  }
+
   // Fetch nearby issues based on location and user ID
   Future<void> fetchNearbyIssues(String userId) async {
     locationPermissionDenied = false;

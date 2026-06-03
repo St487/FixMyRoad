@@ -113,6 +113,9 @@ class ReportController extends ChangeNotifier {
       isSubmitting = false;
       notifyListeners();
 
+      print("Submit Report Response Status: ${response.statusCode}");
+      print("Submit Report Response Body: $data");
+
       if (data['status'] == 'success') {
         clearForm();
         return true;
@@ -143,16 +146,24 @@ class ReportController extends ChangeNotifier {
         report['rejection_reason'] = report['rejection_reason'] ?? "";
 
         if (report['photos'] != null) {
-          List<String> photoUrls = [];
-          for (var photo in report['photos']) {
-            if (photo != null && photo.toString().isNotEmpty) {
+        List<String> photoUrls = [];
+
+        for (var photo in report['photos']) {
+          if (photo != null && photo.toString().isNotEmpty) {
+            
+            // If already Cloudinary URL → use directly
+            if (photo.toString().startsWith("http")) {
+              photoUrls.add(photo.toString());
+            } else {
               photoUrls.add("${MyConfig.myurl}/$photo");
             }
           }
-          report['photos'] = photoUrls;
-        } else {
-          report['photos'] = [];
         }
+
+        report['photos'] = photoUrls;
+      } else {
+        report['photos'] = [];
+      }
         return report;
       }).toList();
       notifyListeners();
@@ -202,6 +213,9 @@ class ReportController extends ChangeNotifier {
 
       isSubmitting = false;
       notifyListeners();
+
+      print("Update Report Response Status: ${response.statusCode}");
+      print("Update Report Response Body: $data");
 
       if (data['status'] == 'success') {
         clearForm();
@@ -263,8 +277,16 @@ class ReportController extends ChangeNotifier {
     }
 
     existingPhotos = List<String>.from(data['photos'] ?? [])
-        .map((photo) => "${MyConfig.myurl}/$photo")
-        .toList();
+    .map((photo) {
+      final p = photo.toString();
+
+      if (p.startsWith("http")) {
+        return p; // Cloudinary URL → use directly
+      } else {
+        return "${MyConfig.myurl}/$p"; // old local images fallback
+      }
+    })
+    .toList();
   }
 
   Future<int?> getUserId() async {

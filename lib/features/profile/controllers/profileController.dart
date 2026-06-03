@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:fix_my_road/utils/image_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
@@ -65,8 +66,7 @@ class ProfileController extends ChangeNotifier {
         postalCode = user['postal_code'] ?? "";
         state = user['state'] ?? "";
         city = user['city'] ?? "";
-        profilePicture = user['profile_picture'] ?? null;
-
+        profilePicture = ImageHelper.getUrl(user['profile_picture']);
         selectedCity = user['city'] ?? "";
   
       } else {

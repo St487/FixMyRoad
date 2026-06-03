@@ -1,3 +1,4 @@
+import 'package:fix_my_road/utils/image_helper.dart';
 import 'package:fix_my_road/utils/myconfig.dart';
 import 'package:flutter/material.dart';
 
@@ -47,7 +48,7 @@ class BeautifulIssueCard extends StatelessWidget {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(15),
                       child: Image.network(
-                        "${MyConfig.myurl}/${issue['icon']}",
+                        ImageHelper.getUrl(issue['icon']),
                         fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) => Image.asset(
                           "assets/default_icon.png",

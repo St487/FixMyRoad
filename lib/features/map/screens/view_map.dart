@@ -1,6 +1,7 @@
 import 'package:fix_my_road/features/map/controller/mapController.dart';
 import 'package:fix_my_road/provider/language_provider.dart';
 import 'package:fix_my_road/shared/support_widget/snack_bar.dart';
+import 'package:fix_my_road/utils/image_helper.dart';
 import 'package:fix_my_road/utils/locationPermission.dart';
 import 'package:fix_my_road/utils/myconfig.dart';
 import 'package:flutter/material.dart';
@@ -388,7 +389,7 @@ class _ViewMapState extends State<ViewMap> {
   );
 
   Widget _buildEnhancedImage(String path) {
-    String imageUrl = "${MyConfig.myurl}/$path";
+    final imageUrl = ImageHelper.getUrl(path);
 
     return GestureDetector(
       onTap: () {

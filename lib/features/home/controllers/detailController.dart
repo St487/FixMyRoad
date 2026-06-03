@@ -1,3 +1,4 @@
+import 'package:fix_my_road/utils/image_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -56,14 +57,19 @@ class DetailController extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Get photos list
   List<String> get photos {
     if (issue == null) return [];
-    final List<String> list = [];
-    if (issue!['photo1'] != null) list.add(issue!['photo1']);
-    if (issue!['photo2'] != null) list.add(issue!['photo2']);
-    if (issue!['photo3'] != null) list.add(issue!['photo3']);
-    return list;
+
+    List<String?> raw = [
+      issue!['photo1'],
+      issue!['photo2'],
+      issue!['photo3'],
+    ];
+
+    return raw
+        .where((p) => p != null && p.toString().isNotEmpty)
+        .map((p) => ImageHelper.getUrl(p))
+        .toList();
   }
 
   void setCurrentImageIndex(int index) {

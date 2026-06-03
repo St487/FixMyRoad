@@ -43,7 +43,7 @@ class AuthController extends ChangeNotifier {
   TextEditingController address = TextEditingController();
   TextEditingController postalCode = TextEditingController();
   bool isEnglish = true;
-  bool mockVerification = true; // set false in production
+  bool mockVerification = false; // set false in production
   String? state;
   String? city;
 
@@ -93,7 +93,7 @@ class AuthController extends ChangeNotifier {
           "password": loginPassword.text.trim(),
         }),
       );
-
+      print("Login Response: ${response.body}"); // Debugging line
       final data = json.decode(response.body);
 
       if (data['status'] == 'success') {
@@ -176,9 +176,9 @@ class AuthController extends ChangeNotifier {
       return {"status": "error", "message": isEnglish ? "Password do not match" : "Kata laluan tidak sepadan"};
     }
 
-    // if (!RegExp(r'^\d{4}$').hasMatch(verificationCode.text)) {
-    //   return {"status": "error", "message": isEnglish ? "Incorrect verification code" : "Kod pengesahan salah"};
-    // }
+    if (!RegExp(r'^\d{4}$').hasMatch(verificationCode.text)) {
+      return {"status": "error", "message": isEnglish ? "Incorrect verification code" : "Kod pengesahan salah"};
+    }
 
     final code = verificationCode.text.trim();
 
@@ -248,6 +248,8 @@ class AuthController extends ChangeNotifier {
       );
 
       isLoading = false;
+
+      print("Send Code Response: ${response.body}"); // Debugging line
 
       final data = json.decode(response.body);
       return data;

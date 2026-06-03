@@ -287,10 +287,24 @@ class _HomePageState extends State<HomePage> {
                             padding: const EdgeInsets.only(top: 10, bottom: 100),
                             itemCount: displayedIssues.length,
                             itemBuilder: (context, index) {
-                              final issue = filteredIssues[index];
-                              String statusText = issue['status'] == 'approved' 
-                                  ? (controller.isEnglish ? 'Reported' : 'Dilaporkan') 
+                              final issue = displayedIssues[index];
+
+                              String statusText = issue['status'] == 'approved'
+                                  ? (controller.isEnglish ? 'Reported' : 'Dilaporkan')
                                   : (controller.isEnglish ? 'In Progress' : 'Dalam Proses');
+
+                              final icon = issue['icon'];
+
+                              String imageUrl = "";
+
+                              if (icon != null &&
+                                  icon.toString().isNotEmpty &&
+                                  icon.toString() != "null") {
+                                imageUrl = icon.toString().startsWith("http://") ||
+                                        icon.toString().startsWith("https://")
+                                    ? icon.toString()
+                                    : "${MyConfig.myurl}/${icon.toString()}";
+                              }
 
                               return IssueCard(
                                 title: AppText.issueType(issue['issue_type'], lang),
@@ -301,22 +315,31 @@ class _HomePageState extends State<HomePage> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => IssueDetailPage(issueId: issue['id']),
+                                      builder: (context) =>
+                                          IssueDetailPage(issueId: issue['id']),
                                     ),
                                   );
                                 },
-                                iconWidget: Image.network(
-                                  "${MyConfig.myurl}/${issue['icon']}",
-                                  width: 40,
-                                  height: 40,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) => Image.asset(
-                                    "assets/default_icon.png",
-                                    width: 40,
-                                    height: 40,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
+                                iconWidget: imageUrl.isNotEmpty
+                                    ? Image.network(
+                                        imageUrl,
+                                        width: 40,
+                                        height: 40,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) =>
+                                            Image.asset(
+                                          "assets/default_icon.png",
+                                          width: 40,
+                                          height: 40,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      )
+                                    : Image.asset(
+                                        "assets/default_icon.png",
+                                        width: 40,
+                                        height: 40,
+                                        fit: BoxFit.cover,
+                                      ),
                               );
                             },
                           );
